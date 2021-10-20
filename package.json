@@ -1,0 +1,15 @@
+{
+  "name": "insetindynamodb",
+  "version": "1.0.0",
+  "description": "Batch insert in dynamodb",
+  "main": "exports.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Akash Pandey",
+  "license": "ISC",
+  "dependencies": {
+    "csvtojson": "^2.0.10",
+    "uuid": "^8.3.2"
+  }
+}
