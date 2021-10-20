@@ -18,7 +18,7 @@ exports.handler = async function (event, ctx, callback) {
             errorJson.message = "FileName Not Found";
             error.Error = errorJson;
             console.log(error);
-            return error
+            return error;
         }
     } catch (err) {
         console.log("Failed to upload file", err);
