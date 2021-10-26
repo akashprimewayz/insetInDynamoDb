@@ -1,8 +1,7 @@
 let service = require('./service.js');
 let neritoUtils = require('./neritoUtils.js');
 
-async function insertEmployee(fileName) {
-
+async function insertEmployee(fileName,orgId) {
     try {
         let isAllInserted = true;
         let csvJson;
@@ -41,7 +40,7 @@ async function insertEmployee(fileName) {
         }
 
         try {
-            const result = await service.insertDataIntoDb(csvJson);
+            const result = await service.insertDataIntoDb(csvJson,orgId);
             if (result != null && result != undefined && !isEmpty(result)) {
                 let csvJson = JSON.parse(JSON.stringify(result));
                 for (let i = 0; i < csvJson.length; i++) {

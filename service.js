@@ -136,7 +136,7 @@ module.exports = {
         }
     },
 
-    insertDataIntoDb: async function (data) {
+    insertDataIntoDb: async function (data,orgId) {
 
         const batches = [];
         const BATCH_SIZE = 25;
@@ -165,7 +165,7 @@ module.exports = {
                     params.RequestItems[ddbTable].push({
                         PutRequest: {
                             Item: {
-                                "Id": "ORG#" + uniqueId,
+                                "Id": orgId,
                                 "SK": "EMP#" + uniqueId,
                                 "PhoneNumber": item['phoneNumber'],
                                 "Password": item['password'],
