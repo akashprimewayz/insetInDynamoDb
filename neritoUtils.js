@@ -1,12 +1,23 @@
 const emailRegex = /^[-!#$%&'*+\/0-9=?A-Z^_a-z{|}~](\.?[-!#$%&'*+\/0-9=?A-Z^_a-z`{|}~])*@[a-zA-Z0-9](-*\.?[a-zA-Z0-9])*\.[a-zA-Z](-?[a-zA-Z0-9])+$/;
 
 module.exports = {
+  empStatus : {
+    PENDING: 'PENDING',
+    COMPLETED: 'COMPLETED',
+    FAILED: 'FAILED'
+},
   successResponseJson: async function (message, code) {
     let error = {};
     let Error = {};
     Error.Success = message;
     error.isBase64Encoded = false;
     error.statusCode = code;
+    error.headers = { 
+	    "X-Requested-With": '*',
+        "Access-Control-Allow-Headers": 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,x-requested-with',
+        "Access-Control-Allow-Origin": '*',
+        "Access-Control-Allow-Methods": 'POST,GET,OPTIONS,PUT'
+    },
     error.body = JSON.stringify(Error);
     console.log(error);
     return error;
@@ -16,6 +27,12 @@ module.exports = {
     let Error = {};
     Error.Errors = message;
     error.isBase64Encoded = false;
+    error.headers = { 
+	    "X-Requested-With": '*',
+        "Access-Control-Allow-Headers": 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,x-requested-with',
+        "Access-Control-Allow-Origin": '*',
+        "Access-Control-Allow-Methods": 'POST,GET,OPTIONS,PUT'
+    },
     error.statusCode = code;
     error.body = JSON.stringify(Error);
     console.log(error);

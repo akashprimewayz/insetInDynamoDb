@@ -1,5 +1,6 @@
 // Load the AWS SDK for Node.js
 let employee = require('./employee.js');
+let neritoUtils = require('./neritoUtils.js');
 
 exports.handler = async function (event, ctx, callback) {
     let json = JSON.parse(event.body);
@@ -13,15 +14,10 @@ exports.handler = async function (event, ctx, callback) {
             return result;
         } else {
             console.log("CSV File Name Not Found : " + fileName);
-            let error = {};
-            let errorJson = {};
-            errorJson.message = "FileName Not Found";
-            error.Error = errorJson;
-            console.log(error);
-            return error;
+            return neritoUtils.errorResponseJson("FileName Not Found", 400);
         }
     } catch (err) {
         console.log("Failed to upload file", err);
-        callback(new Error(JSON.stringify(err)));
+        return neritoUtils.errorResponseJson(err, 400);
     }
 };
