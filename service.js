@@ -49,7 +49,7 @@ module.exports = {
 
     readCsvFromS3: async function (fileName) {
         const params = {
-            Bucket: 'employee-csv/temp',
+            Bucket: bucket_name,
             Key: fileName
         };
         try {
