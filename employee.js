@@ -1,7 +1,7 @@
 let service = require('./service.js');
 let neritoUtils = require('./neritoUtils.js');
 
-async function insertEmployee(fileName) {
+async function insertEmployee(fileName, orgId) {
 
     try {
         let isAllInserted = true;
@@ -41,7 +41,7 @@ async function insertEmployee(fileName) {
         }
 
         try {
-            const result = await service.insertDataIntoDb(csvJson);
+            const result = await service.insertDataIntoDb(csvJson, orgId);
             if (result != null && result != undefined && !isEmpty(result)) {
                 let csvJson = JSON.parse(JSON.stringify(result));
                 for (let i = 0; i < csvJson.length; i++) {
@@ -61,13 +61,16 @@ async function insertEmployee(fileName) {
             return neritoUtils.errorResponseJson("Failed Insertion", 400);
         }
 
-        let response = {
-            message: 'Successfully Inserted',
-        };
-        return neritoUtils.successResponseJson(response, 200);
+        try {
+            const result = await service.getDatabyKey(orgId);
+            return neritoUtils.successResponseJson(result, 200);
+        } catch (err) {
+            console.log("Failed to fetch data from db : ", err);
+            return neritoUtils.errorResponseJson("Failed Fetch", 400);
+        }
     } catch (err) {
-        console.log("Failed to insert data into db : " + fileName, err);
-        return neritoUtils.errorResponseJson("Failed Insertion", 402);
+        console.log("Something went wrong : " + fileName, err);
+        return neritoUtils.errorResponseJson("Failed Insertion", 400);
     }
 }
 

@@ -49,7 +49,7 @@ module.exports = {
 
     readCsvFromS3: async function (fileName) {
         const params = {
-            Bucket: 'employee-csv/temp',
+            Bucket: bucket_name,
             Key: fileName
         };
         try {
@@ -117,6 +117,7 @@ module.exports = {
                         errorType.push("DUP");
                         json[i].errorType = errorType;
                         isDuplicateLine = true;
+                        break;                       
                     }
                 }
                 if (isBlankLine || isInvalidLine || isDuplicateLine) {
@@ -136,7 +137,7 @@ module.exports = {
         }
     },
 
-    insertDataIntoDb: async function (data) {
+    insertDataIntoDb: async function (data, orgId) {
 
         const batches = [];
         const BATCH_SIZE = 25;
@@ -165,19 +166,19 @@ module.exports = {
                     params.RequestItems[ddbTable].push({
                         PutRequest: {
                             Item: {
-                                "Id": "ORG#" + uniqueId,
+                                "Id": orgId,
                                 "SK": "EMP#" + uniqueId,
                                 "PhoneNumber": item['phoneNumber'],
                                 "Password": item['password'],
                                 "FirstName": item['firstName'],
                                 "LastName": item['lastName'],
                                 "Email": item['email'],
-                                "Birthdate": item['birthdate'],
+                                "Birthdate": neritoUtils.formatDate(neritoUtils.stringToDate(item['birthdate'],"dd/MM/yyyy","/")),
                                 "Gender": item['gender'],
                                 "Address": item['address'],
                                 "State": item['state'],
                                 "City": item['city'],
-                                "Rfc": item['rfc']
+                                "RFC": item['rfc']
                             }
                         }
                     });
@@ -200,5 +201,27 @@ module.exports = {
             console.error('Error: ', error);
             throw new Error(error);
         });
+    },
+    getDatabyKey: async function (orgId) {
+        const params = {
+            TableName: ddbTable,
+            KeyConditionExpression: '#Id = :Id and begins_with(#SK, :SK)',
+            ExpressionAttributeNames: {
+                "#Id": "Id",
+                "#SK": 'SK'
+            },
+            ExpressionAttributeValues: {
+                ":Id": orgId,
+                ":SK": "EMP#"
+            }
+        };
+        let result = await documentClient.query(params)
+            .promise()
+            .catch(error => {
+                console.error('Error: ', error);
+                throw new Error(error);
+            });
+        return result;
     }
+
 };
