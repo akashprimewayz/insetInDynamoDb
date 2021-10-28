@@ -1,11 +1,29 @@
 let service = require('./service.js');
 let neritoUtils = require('./neritoUtils.js');
 
-async function insertEmployee(fileName, orgId) {
-
+async function insertEmployee(fileName, orgId, fileId) {
     try {
+        let fileName;
         let isAllInserted = true;
         let csvJson;
+        try {
+            let filedetails = await service.getFileDetailsById(orgId, fileId);
+            if (filedetails == null) {
+                console.log("CSV file details not found by fileId: " + fileId);
+                return neritoUtils.errorResponseJson("NotFound", 400);
+            }
+            filedetails = JSON.parse(JSON.stringify(filedetails));
+            filedetails = filedetails.Items[0];
+            if (filedetails.CsvStatus != null && filedetails.CsvStatus.localeCompare(neritoUtils.csvStatus.PENDING) == 0) {
+                fileName = filedetails.CsvName;
+            } else {
+                console.log("No CSV file found Pending By fileId: " + fileId);
+                return neritoUtils.errorResponseJson("No CSV file found Pending By fileId: ", 400);
+            }
+        } catch (err) {
+            console.log("CSV file details not found by fileId: " + fileId, err);
+            return neritoUtils.errorResponseJson("CSV Details Not Found", 400);
+        }
         try {
             let isFileExist = await service.isFileExist(fileName);
             if (!isFileExist) {
@@ -59,6 +77,14 @@ async function insertEmployee(fileName, orgId) {
         } catch (err) {
             console.log("Failed to insert data into db : " + fileName, err);
             return neritoUtils.errorResponseJson("Failed Insertion", 400);
+        }
+
+        try {
+            const result = await service.updateCsvDetails(orgId, fileId);
+            console.log("result", result)
+        } catch (err) {
+            console.log("Failed to fetch data from db : ", err);
+            return neritoUtils.errorResponseJson("Failed Fetch", 400);
         }
 
         try {

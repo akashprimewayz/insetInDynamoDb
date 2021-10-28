@@ -4,8 +4,7 @@ let neritoUtils = require('./neritoUtils.js');
 
 exports.handler = async function (event, ctx, callback) {
     let json = JSON.parse(event.body);
-    let fileName;
-    let orgId;
+    let fileName, orgId, fileId;
 
     if (json != null && json['fileName'] == null) {
         return neritoUtils.errorResponseJson("FileName Not Found", 400);
@@ -15,11 +14,17 @@ exports.handler = async function (event, ctx, callback) {
         return neritoUtils.errorResponseJson("orgId Not Found", 400);
     }
 
+    if (json != null && json['fileId'] == null) {
+        return neritoUtils.errorResponseJson("fileId Not Found", 400);
+    }
+    
     fileName = json['fileName'];
     orgId = json['orgId'];
+    fileId = json['fileId'];
+
     try {
-        if (fileName != null && orgId!=null) {
-            const result = await employee(fileName,orgId);
+        if (fileName != null && orgId != null) {
+            const result = await employee(fileName, orgId, fileId);
             return result;
         } else {
             console.log("CSV File Name Or orgId Not Found : " + fileName);
