@@ -117,7 +117,7 @@ module.exports = {
                         errorType.push("DUP");
                         json[i].errorType = errorType;
                         isDuplicateLine = true;
-                        break;                       
+                        break;
                     }
                 }
                 if (isBlankLine || isInvalidLine || isDuplicateLine) {
@@ -173,7 +173,7 @@ module.exports = {
                                 "FirstName": item['firstName'],
                                 "LastName": item['lastName'],
                                 "Email": item['email'],
-                                "Birthdate": neritoUtils.formatDate(neritoUtils.stringToDate(item['birthdate'],"dd/MM/yyyy","/")),
+                                "Birthdate": neritoUtils.formatDate(neritoUtils.stringToDate(item['birthdate'], "dd/MM/yyyy", "/")),
                                 "Gender": item['gender'],
                                 "Address": item['address'],
                                 "State": item['state'],
@@ -222,6 +222,55 @@ module.exports = {
                 throw new Error(error);
             });
         return result;
-    }
+    },
+    getFileDetailsById: async function (orgId, empId) {
+        const params = {
+            TableName: ddbTable,
+            KeyConditionExpression: '#Id = :Id and #SK= :SK',
+            ExpressionAttributeNames: {
+                "#Id": "Id",
+                "#SK": "SK"
+            },
+            ExpressionAttributeValues: {
+                ":Id": orgId,
+                ":SK": empId
+            }
+        };
+        let result = await documentClient.query(params)
+            .promise()
+            .catch(error => {
+                console.error('Error: ', error);
+                throw new Error(error);
+            });
+        return result;
+    },
 
+    updateCsvDetails: async function (orgId, fileId) {
+        console.log("in updateCsvDetails");
+        let params = {
+            TableName: ddbTable,
+            Key: {
+                "Id": orgId,
+                "SK": fileId
+            },
+            UpdateExpression: "set CsvStatus = :CsvStatus",
+            ExpressionAttributeValues: {
+                ":CsvStatus": neritoUtils.csvStatus.COMPLETED
+            },
+            ReturnValues: "UPDATED_NEW"
+        };
+        let dbData;
+        try {
+            dbData = await documentClient.update(params, function (err, data) {
+                if (err) {
+                    console.error("Unable to add item. Error JSON:", JSON.stringify(err, null, 2));
+                    return false;
+                }
+            }).promise();
+        } catch (error) {
+            console.error("Something went wrong while adding data into Db", JSON.stringify(error, null, 2));
+            return false
+        }
+        return dbData;
+    }
 };
