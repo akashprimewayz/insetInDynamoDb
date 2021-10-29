@@ -1,4 +1,107 @@
+let CSVFileValidator = require('csv-file-validator');
 const emailRegex = /^[-!#$%&'*+\/0-9=?A-Z^_a-z{|}~](\.?[-!#$%&'*+\/0-9=?A-Z^_a-z`{|}~])*@[a-zA-Z0-9](-*\.?[a-zA-Z0-9])*\.[a-zA-Z](-?[a-zA-Z0-9])+$/;
+const config = {
+  headers: [
+    {
+      name: 'phoneNumber',
+      inputName: 'phoneNumber',
+      required: true,
+      requiredError: function (headerName, rowNumber, columnNumber) {
+        return `${headerName} is required in the ${rowNumber} row / ${columnNumber} column`
+      }
+    },
+    {
+      name: 'password',
+      inputName: 'password',
+      required: true,
+      requiredError: function (headerName, rowNumber, columnNumber) {
+        return `${headerName} is required in the ${rowNumber} row / ${columnNumber} column`
+      }
+    },
+    {
+      name: 'firstName',
+      inputName: 'firstName',
+      required: true,
+      requiredError: function (headerName, rowNumber, columnNumber) {
+        return `${headerName} is required in the ${rowNumber} row / ${columnNumber} column`
+      }
+    },
+    {
+      name: 'lastName',
+      inputName: 'lastName',
+      required: true,
+      requiredError: function (headerName, rowNumber, columnNumber) {
+        return `${headerName} is required in the ${rowNumber} row / ${columnNumber} column`
+      },
+    },
+    {
+      name: 'email',
+      inputName: 'email',
+      unique: true,
+      uniqueError: function (headerName, rowNumber, columnNumber) {
+        return `${headerName} is not unique in the ${rowNumber} row`
+      },
+      validate: function (email) {
+        return isEmailValid(email)
+      },
+      validateError: function (headerName, rowNumber, columnNumber) {
+        return `${headerName} is not valid in the ${rowNumber} row / ${columnNumber} column`
+      }
+    },
+    {
+      name: 'birthdate',
+      inputName: 'birthdate',
+      required: true,
+      requiredError: function (headerName, rowNumber, columnNumber) {
+        return `${headerName} is required in the ${rowNumber} row / ${columnNumber} column`
+      }
+    },
+    {
+      name: 'gender',
+      inputName: 'gender',
+      required: true,
+      requiredError: function (headerName, rowNumber, columnNumber) {
+        return `${headerName} is required in the ${rowNumber} row / ${columnNumber} column`
+      }
+    },
+    {
+      name: 'address',
+      inputName: 'address',
+      required: true,
+      requiredError: function (headerName, rowNumber, columnNumber) {
+        return `${headerName} is required in the ${rowNumber} row / ${columnNumber} column`
+      }
+    },
+    {
+      name: 'state',
+      inputName: 'state',
+      required: true,
+      requiredError: function (headerName, rowNumber, columnNumber) {
+        return `${headerName} is required in the ${rowNumber} row / ${columnNumber} column`
+      }
+    },
+    {
+      name: 'city',
+      inputName: 'city',
+      required: true,
+      requiredError: function (headerName, rowNumber, columnNumber) {
+        return `${headerName} is required in the ${rowNumber} row / ${columnNumber} column`
+      }
+    },
+    {
+      name: 'rfc',
+      inputName: 'rfc',
+      required: true,
+      requiredError: function (headerName, rowNumber, columnNumber) {
+        return `${headerName} is required in the ${rowNumber} row / ${columnNumber} column`
+      },
+      unique: true,
+      uniqueError: function (headerName, rowNumber, columnNumber) {
+        return `${headerName} is not unique in the ${rowNumber} row`
+      },
+    }
+  ]
+}
 
 module.exports = {
   csvStatus: {
@@ -6,6 +109,7 @@ module.exports = {
     COMPLETED: 'COMPLETED',
     FAILED: 'FAILED'
   },
+
   successResponseJson: async function (message, code) {
     let error = {};
     let Error = {};
@@ -22,6 +126,7 @@ module.exports = {
     console.log(error);
     return error;
   },
+
   errorResponseJson: async function (message, code) {
     let error = {};
     let Error = {};
@@ -38,74 +143,6 @@ module.exports = {
     console.log(error);
     return error;
   },
-  validateBlankrecord: function (jsonObj) {
-    let isError = false;
-
-    if (jsonObj == null) {
-      isError = true;
-    }
-
-    if (jsonObj.email == null) {
-      isError = true;
-    }
-
-    if (jsonObj.firstName == null) {
-      isError = true;
-    }
-
-    if (jsonObj.lastName == null) {
-      isError = true;
-    }
-
-    if (jsonObj.password == null) {
-      isError = true;
-    }
-
-    if (jsonObj.phoneNumber == null) {
-      isError = true;
-    }
-    if (jsonObj.birthdate == null) {
-      isError = true;
-    }
-
-    if (jsonObj.gender == null) {
-      isError = true;
-    }
-
-    if (jsonObj.address == null) {
-      isError = true;
-    }
-
-    if (jsonObj.state == null) {
-      isError = true;
-    }
-
-    if (jsonObj.city == null) {
-      isError = true;
-    }
-
-    if (jsonObj.rfc == null) {
-      isError = true;
-    }
-
-    return isError;
-  },
-
-  validateInvalidRecord: function (jsonObj) {
-    let isError = false;
-
-    if (jsonObj != null && !isEmailValid(jsonObj.email)) {
-      console.log("Invalid1");
-      isError = true;
-    }
-    let reg = new RegExp('^[0-9]+$');
-    if (jsonObj != null && !reg.test(jsonObj.phoneNumber)) {
-      console.log("Invalid2");
-      isError = true;
-    }
-
-    return isError;
-  },
 
   stringToDate: function (_date, _format, _delimiter) {
     var formatLowerCase = _format.toLowerCase();
@@ -119,6 +156,7 @@ module.exports = {
     var formatedDate = new Date(dateItems[yearIndex], month, dateItems[dayIndex]);
     return formatedDate;
   },
+
   formatDate: function (date) {
     var d = new Date(date),
       month = '' + (d.getMonth() + 1),
@@ -131,8 +169,23 @@ module.exports = {
       day = '0' + day;
 
     return [year, month, day].join('-');
-  }
+  },
 
+  validateCsv: async function (data) {
+    let csvDataResult;
+    let csvJson = data.Body.toString('utf-8');
+
+    await CSVFileValidator(csvJson, config)
+      .then(csvData => {
+        csvDataResult = csvData;
+        return csvDataResult;
+      })
+      .catch(err => {
+        console.error(err);
+        return err;
+      });
+    return csvDataResult;
+  }
 };
 
 function isEmailValid(email) {
@@ -158,6 +211,5 @@ function isEmailValid(email) {
   if (domainParts.some(function (part) { return part.length > 63; })) {
     return false;
   }
-
   return true;
 }

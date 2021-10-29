@@ -17,7 +17,7 @@ exports.handler = async function (event, ctx, callback) {
     if (json != null && json['fileId'] == null) {
         return neritoUtils.errorResponseJson("fileId Not Found", 400);
     }
-    
+
     fileName = json['fileName'];
     orgId = json['orgId'];
     fileId = json['fileId'];

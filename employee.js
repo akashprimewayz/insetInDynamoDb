@@ -6,6 +6,7 @@ async function insertEmployee(fileName, orgId, fileId) {
         let fileName;
         let isAllInserted = true;
         let csvJson;
+        let csvFile;
         try {
             let filedetails = await service.getFileDetailsById(orgId, fileId);
             if (filedetails == null) {
@@ -34,10 +35,9 @@ async function insertEmployee(fileName, orgId, fileId) {
             console.log("CSV file not found with this Name: " + fileName, err);
             return neritoUtils.errorResponseJson("Failed", 400);
         }
-
         try {
-            csvJson = await service.readCsvFromS3(fileName);
-            if (csvJson == null) {
+            csvFile = await service.readCsvFromS3(fileName);
+            if (csvFile == null) {
                 console.log("Empty CSV File Found : " + fileName);
                 return neritoUtils.errorResponseJson("Empty", 400);
             }
@@ -45,19 +45,19 @@ async function insertEmployee(fileName, orgId, fileId) {
             console.log("Failed to Parse CSV File : " + fileName, err);
             return neritoUtils.errorResponseJson("Failed", 400);
         }
-
         try {
-            const errorJson = service.validateCSV(csvJson);
-            if (errorJson != null) {
-                console.log("Validation Error : " + fileName);
-                return neritoUtils.errorResponseJson(errorJson, 400);
-
+            const validation = await neritoUtils.validateCsv(csvFile);
+            if (validation != null) {
+                csvJson = validation.data;
+                if (validation.inValidMessages != null && validation.inValidMessages.length > 0) {
+                    console.log("Validation Error : " + fileName);
+                    return neritoUtils.errorResponseJson(validation, 400);
+                }
             }
         } catch (err) {
             console.log("Failed to Parse CSV File : " + fileName, err);
             return neritoUtils.errorResponseJson("Failed Validation", 400);
         }
-
         try {
             const result = await service.insertDataIntoDb(csvJson, orgId);
             if (result != null && result != undefined && !isEmpty(result)) {
@@ -72,7 +72,6 @@ async function insertEmployee(fileName, orgId, fileId) {
             if (!isAllInserted) {
                 console.log("Failed to Insert Data in Db: " + fileName);
                 return neritoUtils.errorResponseJson("Failed insertion", 400);
-
             }
         } catch (err) {
             console.log("Failed to insert data into db : " + fileName, err);

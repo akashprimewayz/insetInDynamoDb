@@ -1,11 +1,8 @@
 // Load the AWS SDK for Node.js
 let AWS = require('aws-sdk');
-const csvtojson = require('csvtojson');
 let neritoUtils = require('./neritoUtils.js');
-
 const { v4: uuidv4 } = require('uuid');
 const s3 = new AWS.S3();
-const csvHeaders = ["phoneNumber", "password", "firstName", "lastName", "email", "birthdate", "gender", "address", "state", "city", "rfc"];
 
 // Set the region
 //const accessKeyId = process.env.accessKeyId
@@ -53,101 +50,20 @@ module.exports = {
             Key: fileName
         };
         try {
-            const stream = s3.getObject(params).createReadStream();
-            const json = await csvtojson().fromStream(stream);
-            return json;
+            const data = await s3.getObject(params).promise();
+            return data;
         } catch (err) {
-            console.log("Failed to upload file", err);
+            console.log("Failed to get file from S3", err);
             throw new Error(err);
         }
     },
-
-
-    validateCSV: function (json) {
-        console.log(json);
-        let errorresponse = [];
-        let rows = [];
-        let isError = false;
-        try {
-            let jsonHeader = Object.keys(json[0]);
-            csvHeaders.forEach(element => {
-                if (!jsonHeader.includes(element)) {
-                    rows.push(element);
-                    console.log(element);
-                }
-            });
-
-            if (rows.length != 0) {
-                let error = {};
-                let errorJson = {};
-                errorJson.header = "Please add these header";
-                errorJson.headers = rows;
-                error.Error = errorJson;
-                console.log(error);
-                return error;
-            }
-
-            if (json.length < 1) {
-                let error = {};
-                let errorJson = {};
-                errorJson.rowCount = "CSV file should contain at least 10 record";
-                error.Error = errorJson;
-                console.log(error);
-                return error;
-            }
-
-            for (let i = 0; i < json.length; i++) {
-                let errorType = [];
-                let isBlankLine = neritoUtils.validateBlankrecord(json[i]);
-
-                if (isBlankLine) {
-                    errorType.push("BLK");
-                    json[i].errorType = errorType;
-                }
-                let isInvalidLine = neritoUtils.validateInvalidRecord(json[i]);
-
-                if (isInvalidLine) {
-                    errorType.push("INV");
-                    json[i].errorType = errorType;
-                }
-                let isDuplicateLine = false;
-
-                for (let j = i + 1; j < json.length; j++) {
-                    if (json[i]['email'].localeCompare(json[j]['email']) == 0) {
-                        errorType.push("DUP");
-                        json[i].errorType = errorType;
-                        isDuplicateLine = true;
-                        break;
-                    }
-                }
-                if (isBlankLine || isInvalidLine || isDuplicateLine) {
-                    json[i].lineNumber = i + 1;
-                    errorresponse.push(json[i]);
-                    isError = true;
-                }
-            }
-            if (isError) {
-                return errorresponse;
-            } else {
-                return null;
-            }
-        } catch (err) {
-            console.log("Failed to upload file", err);
-            return null;
-        }
-    },
-
     insertDataIntoDb: async function (data, orgId) {
-
         const batches = [];
         const BATCH_SIZE = 25;
 
         while (data.length > 0) {
             batches.push(data.splice(0, BATCH_SIZE));
         }
-
-        console.log('Batches: ', batches.length);
-
         let batchCount = 0;
 
         // Save each batch
