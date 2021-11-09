@@ -9,7 +9,8 @@ const s3 = new AWS.S3();
 //const secretAccessKey = process.env.secretAccessKey
 const region = process.env.region
 const bucket_name = process.env.bucket_name
-const ddbTable = process.env.table
+const organization_table = process.env.organization_table
+const config_table = process.env.config_table
 
 AWS.config.update(
     {
@@ -73,13 +74,14 @@ module.exports = {
                 const params = {
                     RequestItems: {}
                 };
-                params.RequestItems[ddbTable] = [];
-
+                params.RequestItems[organization_table] = [];
+                let date = new Date();
+                let month = date.getMonth();
                 itemData.forEach((item) => {
                     // Build params
                     // console.log(item)
                     let uniqueId = uuidv4();
-                    params.RequestItems[ddbTable].push({
+                    params.RequestItems[organization_table].push({
                         PutRequest: {
                             Item: {
                                 "Id": orgId,
@@ -89,12 +91,18 @@ module.exports = {
                                 "FirstName": item['firstName'],
                                 "LastName": item['lastName'],
                                 "Email": item['email'],
-                                "Birthdate": neritoUtils.formatDate(neritoUtils.stringToDate(item['birthdate'], "dd/MM/yyyy", "/")),
+                                "Birthdate": neritoUtils.formatDate(neritoUtils.dateconverter(item['birthdate'])),
                                 "Gender": item['gender'],
                                 "Address": item['address'],
                                 "State": item['state'],
                                 "City": item['city'],
-                                "RFC": item['rfc']
+                                "RFC": item['rfc'],
+                                "AccountType": item['typeAccount'],
+                                "BankId": item['bankId'],
+                                "AccountClabe": item['accountClabe'],
+                                "Status": true,
+                                "Month": neritoUtils.months[month],
+                                "Year": date.getFullYear()
                             }
                         }
                     });
@@ -120,7 +128,7 @@ module.exports = {
     },
     getDatabyKey: async function (orgId) {
         const params = {
-            TableName: ddbTable,
+            TableName: organization_table,
             KeyConditionExpression: '#Id = :Id and begins_with(#SK, :SK)',
             ExpressionAttributeNames: {
                 "#Id": "Id",
@@ -141,7 +149,7 @@ module.exports = {
     },
     getFileDetailsById: async function (orgId, empId) {
         const params = {
-            TableName: ddbTable,
+            TableName: organization_table,
             KeyConditionExpression: '#Id = :Id and #SK= :SK',
             ExpressionAttributeNames: {
                 "#Id": "Id",
@@ -154,7 +162,7 @@ module.exports = {
         };
         let result = await documentClient.query(params)
             .promise()
-            .catch(error => {
+            .catch(error => {   
                 console.error('Error: ', error);
                 throw new Error(error);
             });
@@ -164,7 +172,7 @@ module.exports = {
     updateCsvDetails: async function (orgId, fileId) {
         console.log("in updateCsvDetails");
         let params = {
-            TableName: ddbTable,
+            TableName: organization_table,
             Key: {
                 "Id": orgId,
                 "SK": fileId
@@ -188,5 +196,24 @@ module.exports = {
             return false
         }
         return dbData;
-    }
+    },
+    getBankConfigByType: async function (Type) {
+        const params = {
+            TableName: config_table,
+            KeyConditionExpression: '#Type = :Type',
+            ExpressionAttributeNames: {
+                "#Type": "Type"
+            },
+            ExpressionAttributeValues: {
+                ":Type": Type
+            }
+        };
+        let result = await documentClient.query(params)
+            .promise()
+            .catch(error => {   
+                console.error('Error: ', error);
+                throw new Error(error);
+            });
+        return result.Items[0].Config;
+    },    
 };

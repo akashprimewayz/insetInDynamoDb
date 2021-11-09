@@ -1,5 +1,6 @@
 let service = require('./service.js');
 let neritoUtils = require('./neritoUtils.js');
+let csvValidator = require('./csvValidator.js');
 
 async function insertEmployee(fileName, orgId, fileId) {
     try {
@@ -46,7 +47,7 @@ async function insertEmployee(fileName, orgId, fileId) {
             return neritoUtils.errorResponseJson("Failed", 400);
         }
         try {
-            const validation = await neritoUtils.validateCsv(csvFile);
+            const validation = await csvValidator.validateCsv(csvFile);
             if (validation != null) {
                 csvJson = validation.data;
                 if (validation.inValidMessages != null && validation.inValidMessages.length > 0) {
