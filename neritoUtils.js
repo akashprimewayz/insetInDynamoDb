@@ -1,109 +1,6 @@
-let CSVFileValidator = require('csv-file-validator');
-const emailRegex = /^[-!#$%&'*+\/0-9=?A-Z^_a-z{|}~](\.?[-!#$%&'*+\/0-9=?A-Z^_a-z`{|}~])*@[a-zA-Z0-9](-*\.?[a-zA-Z0-9])*\.[a-zA-Z](-?[a-zA-Z0-9])+$/;
-const config = {
-  headers: [
-    {
-      name: 'phoneNumber',
-      inputName: 'phoneNumber',
-      required: true,
-      requiredError: function (headerName, rowNumber, columnNumber) {
-        return `${headerName} is required in the ${rowNumber} row / ${columnNumber} column`
-      }
-    },
-    {
-      name: 'password',
-      inputName: 'password',
-      required: true,
-      requiredError: function (headerName, rowNumber, columnNumber) {
-        return `${headerName} is required in the ${rowNumber} row / ${columnNumber} column`
-      }
-    },
-    {
-      name: 'firstName',
-      inputName: 'firstName',
-      required: true,
-      requiredError: function (headerName, rowNumber, columnNumber) {
-        return `${headerName} is required in the ${rowNumber} row / ${columnNumber} column`
-      }
-    },
-    {
-      name: 'lastName',
-      inputName: 'lastName',
-      required: true,
-      requiredError: function (headerName, rowNumber, columnNumber) {
-        return `${headerName} is required in the ${rowNumber} row / ${columnNumber} column`
-      },
-    },
-    {
-      name: 'email',
-      inputName: 'email',
-      unique: true,
-      uniqueError: function (headerName, rowNumber, columnNumber) {
-        return `${headerName} is not unique in the ${rowNumber} row`
-      },
-      validate: function (email) {
-        return isEmailValid(email)
-      },
-      validateError: function (headerName, rowNumber, columnNumber) {
-        return `${headerName} is not valid in the ${rowNumber} row / ${columnNumber} column`
-      }
-    },
-    {
-      name: 'birthdate',
-      inputName: 'birthdate',
-      required: true,
-      requiredError: function (headerName, rowNumber, columnNumber) {
-        return `${headerName} is required in the ${rowNumber} row / ${columnNumber} column`
-      }
-    },
-    {
-      name: 'gender',
-      inputName: 'gender',
-      required: true,
-      requiredError: function (headerName, rowNumber, columnNumber) {
-        return `${headerName} is required in the ${rowNumber} row / ${columnNumber} column`
-      }
-    },
-    {
-      name: 'address',
-      inputName: 'address',
-      required: true,
-      requiredError: function (headerName, rowNumber, columnNumber) {
-        return `${headerName} is required in the ${rowNumber} row / ${columnNumber} column`
-      }
-    },
-    {
-      name: 'state',
-      inputName: 'state',
-      required: true,
-      requiredError: function (headerName, rowNumber, columnNumber) {
-        return `${headerName} is required in the ${rowNumber} row / ${columnNumber} column`
-      }
-    },
-    {
-      name: 'city',
-      inputName: 'city',
-      required: true,
-      requiredError: function (headerName, rowNumber, columnNumber) {
-        return `${headerName} is required in the ${rowNumber} row / ${columnNumber} column`
-      }
-    },
-    {
-      name: 'rfc',
-      inputName: 'rfc',
-      required: true,
-      requiredError: function (headerName, rowNumber, columnNumber) {
-        return `${headerName} is required in the ${rowNumber} row / ${columnNumber} column`
-      },
-      unique: true,
-      uniqueError: function (headerName, rowNumber, columnNumber) {
-        return `${headerName} is not unique in the ${rowNumber} row`
-      },
-    }
-  ]
-}
-
 module.exports = {
+  months: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+
   csvStatus: {
     PENDING: 'PENDING',
     COMPLETED: 'COMPLETED',
@@ -143,7 +40,26 @@ module.exports = {
     console.log(error);
     return error;
   },
-
+  dateconverter: function (date) {
+    var matches = /^(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})$/.exec(date);
+    if (matches == null) return false;
+    var m = matches[2] - 1;
+    var d = matches[1];
+    var y = matches[3];
+    var composedDate = new Date(y, m, d);
+    return composedDate;
+  },
+  isValidDate: function (date) {
+    var matches = /^(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})$/.exec(date);
+    if (matches == null) return false;
+    var m = matches[2] - 1;
+    var d = matches[1];
+    var y = matches[3];
+    var composedDate = new Date(y, m, d);
+    return composedDate.getDate() == d &&
+      composedDate.getMonth() == m &&
+      composedDate.getFullYear() == y;
+  },
   stringToDate: function (_date, _format, _delimiter) {
     var formatLowerCase = _format.toLowerCase();
     var formatItems = formatLowerCase.split(_delimiter);
@@ -171,45 +87,4 @@ module.exports = {
     return [year, month, day].join('-');
   },
 
-  validateCsv: async function (data) {
-    let csvDataResult;
-    let csvJson = data.Body.toString('utf-8');
-
-    await CSVFileValidator(csvJson, config)
-      .then(csvData => {
-        csvDataResult = csvData;
-        return csvDataResult;
-      })
-      .catch(err => {
-        console.error(err);
-        return err;
-      });
-    return csvDataResult;
-  }
-};
-
-function isEmailValid(email) {
-  if (!email) {
-    return false;
-  }
-
-  if (email.length > 254) {
-    return false;
-  }
-  var valid = emailRegex.test(email);
-  if (!valid) {
-    return false;
-  }
-
-  // Further checking of some things regex can't handle
-  var parts = email.split("@");
-  if (parts[0].length > 64) {
-    return false;
-  }
-
-  var domainParts = parts[1].split(".");
-  if (domainParts.some(function (part) { return part.length > 63; })) {
-    return false;
-  }
-  return true;
 }
