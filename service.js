@@ -54,7 +54,7 @@ module.exports = {
             const data = await s3.getObject(params).promise();
             return data;
         } catch (err) {
-            console.log("Failed to get file from S3", err);
+            console.error("Failed to get file from S3", err);
             throw new Error(err);
         }
     },
@@ -76,10 +76,10 @@ module.exports = {
                 };
                 params.RequestItems[organization_table] = [];
                 let date = new Date();
-                let month = date.getMonth();
+                let month = date.getMonth() +1;
                 itemData.forEach((item) => {
                     // Build params
-                    // console.log(item)
+                    // console.error(item)
                     let uniqueId = uuidv4();
                     params.RequestItems[organization_table].push({
                         PutRequest: {
@@ -101,7 +101,7 @@ module.exports = {
                                 "BankId": item['bankId'],
                                 "AccountClabe": item['accountClabe'],
                                 "Status": true,
-                                "Month": neritoUtils.months[month],
+                                "Month": month,
                                 "Year": date.getFullYear()
                             }
                         }
@@ -111,7 +111,7 @@ module.exports = {
                 batchCount++;
                 console.log('Trying batch: ', batchCount);
                 const result = await documentClient.batchWrite(params).promise();
-                console.log(
+                console.error(
                     'Success: ',
                     typeof result === 'string'
                         ? result.substr(0, 100)
@@ -170,7 +170,7 @@ module.exports = {
     },
 
     updateCsvDetails: async function (orgId, fileId) {
-        console.log("in updateCsvDetails");
+        console.error("in updateCsvDetails");
         let params = {
             TableName: organization_table,
             Key: {
