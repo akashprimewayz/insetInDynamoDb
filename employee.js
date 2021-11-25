@@ -47,24 +47,42 @@ async function insertEmployee(orgId, fileId) {
             return neritoUtils.errorResponseJson("Failed", 400);
         }
         try {
-            const validation = await csvValidator.validateCsv(csvFile);
-            if (validation == null || validation == undefined || validation.data == null || validation.data == undefined) {
-                console.error("Validation Error : " + fileName);
-                return neritoUtils.errorResponseJson("Failed Validation", 400);
+            const csvValidationData = await csvValidator.validateCsv(csvFile);
+            if (csvValidationData == null || csvValidationData == undefined || csvValidationData.data == null || csvValidationData.data == undefined) {
+                console.error("csvValidationData Error : " + fileName);
+                return neritoUtils.errorResponseJson("Failed csvValidationData", 400);
             }
-            if (validation.inValidMessages != null && validation.inValidMessages.length > 0) {
-                console.error("Validation Error : " + fileName, validation);
-                return neritoUtils.errorResponseJson(validation, 400);
+            if (csvValidationData.inValidMessages != null && csvValidationData.inValidMessages.length > 0) {
+                console.error("csvValidationData Error : " + fileName, csvValidationData);
+                return neritoUtils.errorResponseJson(csvValidationData, 400);
             }
-            if (validation.data != null && validation.data.length < 10) {
+            if (csvValidationData.data != null && csvValidationData.data.length < 10) {
                 console.error("Row count is less than 10 : " + fileName);
                 return neritoUtils.errorResponseJson("Row count is less than 10", 400);
             }
-            csvJson = validation.data;
+            csvJson = csvValidationData.data;
         } catch (err) {
             console.error("Failed to Parse CSV File : " + fileName, err);
-            return neritoUtils.errorResponseJson("Failed Validation", 400);
+            return neritoUtils.errorResponseJson("Failed csvValidationData", 400);
         }
+        try {
+            let date = new Date();
+            const result = await service.getEmpDataByMonthAndYear(orgId, date.getMonth() + 1, date.getFullYear());
+            if (result != null && result != undefined && !isEmpty(result)) {
+                let csvJson = JSON.parse(JSON.stringify(result));
+                csvJson = csvJson.Items;
+                if (csvJson != null && csvJson != undefined && !isEmpty(csvJson)) {
+                    for (var i = 0; i < csvJson.length; i++) {
+                        var obj = csvJson[i];
+                        const result = await service.deleteRecordByIdAndSk(obj['Id'], obj['SK']);
+                    }
+                }
+            }
+        } catch (err) {
+            console.error("Failed to insert data into db : " + fileName, err);
+            return neritoUtils.errorResponseJson("Failed Insertion", 400);
+        }
+
         try {
             const result = await service.insertDataIntoDb(csvJson, orgId);
             if (result != null && result != undefined && !isEmpty(result)) {
@@ -101,7 +119,7 @@ async function insertEmployee(orgId, fileId) {
             return neritoUtils.errorResponseJson("Failed Fetch", 400);
         }
     } catch (err) {
-        console.error("Something went wrong : " + fileName, err);
+        console.error("Something went wrong", err);
         return neritoUtils.errorResponseJson("Failed Insertion", 400);
     }
 }

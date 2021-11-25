@@ -59,6 +59,7 @@ module.exports = {
         }
     },
     insertDataIntoDb: async function (data, orgId) {
+        console.log("datadatadatadatadata", data)
         const batches = [];
         const BATCH_SIZE = 25;
 
@@ -76,7 +77,7 @@ module.exports = {
                 };
                 params.RequestItems[organization_table] = [];
                 let date = new Date();
-                let month = date.getMonth() +1;
+                let month = date.getMonth() + 1;
                 itemData.forEach((item) => {
                     // Build params
                     // console.error(item)
@@ -126,6 +127,7 @@ module.exports = {
             throw new Error(error);
         });
     },
+
     getDatabyKey: async function (orgId) {
         const params = {
             TableName: organization_table,
@@ -147,6 +149,29 @@ module.exports = {
             });
         return result;
     },
+    getEmployeeDataByMonth: async function (orgId) {
+        const params = {
+            TableName: organization_table,
+            KeyConditionExpression: '#Id = :Id and begins_with(#SK, :SK)',
+            ExpressionAttributeNames: {
+                "#Id": "Id",
+                "#SK": 'SK'
+            },
+            ExpressionAttributeValues: {
+                ":Id": orgId,
+                ":SK": "EMP#"
+            }
+        };
+        let result = await documentClient.query(params)
+            .promise()
+            .catch(error => {
+                console.error('Error: ', error);
+                throw new Error(error);
+            });
+        return result;
+    },
+
+
     getFileDetailsById: async function (orgId, empId) {
         const params = {
             TableName: organization_table,
@@ -162,13 +187,57 @@ module.exports = {
         };
         let result = await documentClient.query(params)
             .promise()
-            .catch(error => {   
+            .catch(error => {
                 console.error('Error: ', error);
                 throw new Error(error);
             });
         return result;
     },
 
+    getEmpDataByMonthAndYear: async function (orgId, month, year) {
+        const params = {
+            TableName: organization_table,
+            KeyConditionExpression: '#Id = :Id and begins_with(#SK, :SK)',
+            FilterExpression: "#Month = :Month and #Year=:Year",
+
+            ExpressionAttributeNames: {
+                "#Id": "Id",
+                "#SK": "SK",
+                "#Year": "Year",
+                "#Month": "Month"
+
+            },
+            ExpressionAttributeValues: {
+                ":Id": orgId,
+                ":SK": "EMP#",
+                ":Year": year,
+                ":Month": month
+            }
+        };
+        let result = await documentClient.query(params)
+            .promise()
+            .catch(error => {
+                console.error('Error: ', error);
+                throw new Error(error);
+            });
+        return result;
+    },
+    deleteRecordByIdAndSk: async function (Id, SK) {
+        const params = {
+            TableName: organization_table,
+            Key: {
+                Id: Id,
+                SK: SK
+            },
+        };
+        let result = await documentClient.delete(params)
+            .promise()
+            .catch(error => {
+                console.error('Error: ', error);
+                throw new Error(error);
+            });
+        return result;
+    },
     updateCsvDetails: async function (orgId, fileId) {
         console.error("in updateCsvDetails");
         let params = {
@@ -210,10 +279,10 @@ module.exports = {
         };
         let result = await documentClient.query(params)
             .promise()
-            .catch(error => {   
+            .catch(error => {
                 console.error('Error: ', error);
                 throw new Error(error);
             });
         return result.Items[0].Config;
-    },    
+    },
 };

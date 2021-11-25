@@ -4,7 +4,7 @@ let neritoUtils = require('./neritoUtils.js');
 
 exports.handler = async function (event, ctx, callback) {
     let json = JSON.parse(event.body);
-    let orgId, fileId;
+    let orgId, fileId, validation;
 
     if (json != null && json['orgId'] == null) {
         return neritoUtils.errorResponseJson("orgId Not Found", 400);
