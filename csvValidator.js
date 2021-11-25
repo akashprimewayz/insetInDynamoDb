@@ -3,6 +3,8 @@ let neritoUtils = require('./neritoUtils.js');
 
 let CSVFileValidator = require('csv-file-validator');
 const emailRegex = /^[-!#$%&'*+\/0-9=?A-Z^_a-z{|}~](\.?[-!#$%&'*+\/0-9=?A-Z^_a-z`{|}~])*@[a-zA-Z0-9](-*\.?[a-zA-Z0-9])*\.[a-zA-Z](-?[a-zA-Z0-9])+$/;
+const phoneNumberRegex = /^\+?([0-9]{2})\)?[-. ]?([0-9]{2})[-. ]?([0-9]{4})[-. ]?([0-9]{4})$/;
+
 let typeAccountConfig;
 let bankIdConfig;
 
@@ -13,7 +15,13 @@ const config = {
             inputName: 'phoneNumber',
             required: true,
             requiredError: function (headerName, rowNumber, columnNumber) {
-                return `${headerName} is required in the ${rowNumber} row / ${columnNumber} column`
+                return `${rowNumber},  ${headerName} is required in the ${columnNumber} column`;
+            },
+            validate: function (phoneNumber) {
+                return isPhoneNumberValid(phoneNumber)
+            },
+            validateError: function (headerName, rowNumber, columnNumber) {
+                return `${rowNumber},  ${headerName} is not valid in the ${columnNumber} column`;
             }
         },
         {
@@ -21,7 +29,7 @@ const config = {
             inputName: 'password',
             required: true,
             requiredError: function (headerName, rowNumber, columnNumber) {
-                return `${headerName} is required in the ${rowNumber} row / ${columnNumber} column`
+                return `${rowNumber},  ${headerName} is required in the ${columnNumber} column`;
             }
         },
         {
@@ -29,7 +37,7 @@ const config = {
             inputName: 'firstName',
             required: true,
             requiredError: function (headerName, rowNumber, columnNumber) {
-                return `${headerName} is required in the ${rowNumber} row / ${columnNumber} column`
+                return `${rowNumber},  ${headerName} is required in the ${columnNumber} column`;
             }
         },
         {
@@ -37,21 +45,25 @@ const config = {
             inputName: 'lastName',
             required: true,
             requiredError: function (headerName, rowNumber, columnNumber) {
-                return `${headerName} is required in the ${rowNumber} row / ${columnNumber} column`
+                return `${rowNumber},  ${headerName} is required in the ${columnNumber} column`;
             },
         },
         {
             name: 'email',
             inputName: 'email',
+            required: true,
+            requiredError: function (headerName, rowNumber, columnNumber) {
+                return `${rowNumber},  ${headerName} is required in the ${columnNumber} column`;
+            },
             unique: true,
             uniqueError: function (headerName, rowNumber, columnNumber) {
-                return `${headerName} is not unique in the ${rowNumber} row`
+                return `${rowNumber},  ${headerName} is not unique in the ${columnNumber} column`;
             },
             validate: function (email) {
                 return isEmailValid(email)
             },
             validateError: function (headerName, rowNumber, columnNumber) {
-                return `${headerName} is not valid in the ${rowNumber} row / ${columnNumber} column`
+                return `${rowNumber},  ${headerName} is not valid in the ${columnNumber} column`;
             }
         },
         {
@@ -59,13 +71,13 @@ const config = {
             inputName: 'birthdate',
             required: true,
             requiredError: function (headerName, rowNumber, columnNumber) {
-                return `${headerName} is required in the ${rowNumber} row / ${columnNumber} column`
+                return `${rowNumber},  ${headerName} is required in the ${columnNumber} column`;
             },
             validate: function (birthdate) {
                 return neritoUtils.isValidDate(birthdate)
             },
             validateError: function (headerName, rowNumber, columnNumber) {
-                return `${headerName} is not valid in the ${rowNumber} row / ${columnNumber} column`
+                return `${rowNumber},  ${headerName} is not valid in the ${columnNumber} column`;
             }
         },
         {
@@ -73,7 +85,7 @@ const config = {
             inputName: 'gender',
             required: true,
             requiredError: function (headerName, rowNumber, columnNumber) {
-                return `${headerName} is required in the ${rowNumber} row / ${columnNumber} column`
+                return `${rowNumber},  ${headerName} is required in the ${columnNumber} column`;
             }
         },
         {
@@ -81,7 +93,7 @@ const config = {
             inputName: 'address',
             required: true,
             requiredError: function (headerName, rowNumber, columnNumber) {
-                return `${headerName} is required in the ${rowNumber} row / ${columnNumber} column`
+                return `${rowNumber},  ${headerName} is required in the ${columnNumber} column`;
             }
         },
         {
@@ -89,7 +101,7 @@ const config = {
             inputName: 'state',
             required: true,
             requiredError: function (headerName, rowNumber, columnNumber) {
-                return `${headerName} is required in the ${rowNumber} row / ${columnNumber} column`
+                return `${rowNumber},  ${headerName} is required in the ${columnNumber} column`;
             }
         },
         {
@@ -97,7 +109,7 @@ const config = {
             inputName: 'city',
             required: true,
             requiredError: function (headerName, rowNumber, columnNumber) {
-                return `${headerName} is required in the ${rowNumber} row / ${columnNumber} column`
+                return `${rowNumber},  ${headerName} is required in the ${columnNumber} column`;
             }
         },
         {
@@ -105,11 +117,11 @@ const config = {
             inputName: 'rfc',
             required: true,
             requiredError: function (headerName, rowNumber, columnNumber) {
-                return `${headerName} is required in the ${rowNumber} row / ${columnNumber} column`
+                return `${rowNumber},  ${headerName} is required in the ${columnNumber} column`;
             },
             unique: true,
             uniqueError: function (headerName, rowNumber, columnNumber) {
-                return `${headerName} is not unique in the ${rowNumber} row`
+                return `${rowNumber},  ${headerName} is not unique in the ${columnNumber} column`;
             },
         },
         {
@@ -117,13 +129,13 @@ const config = {
             inputName: 'typeAccount',
             required: true,
             requiredError: function (headerName, rowNumber, columnNumber) {
-                return `${headerName} is required in the ${rowNumber} row / ${columnNumber} column`
+                return `${rowNumber},  ${headerName} is required in the ${columnNumber} column`;
             },
             validate: function (typeAccount) {
                 return isTypeAccountValid(typeAccount)
             },
             validateError: function (headerName, rowNumber, columnNumber) {
-                return `${headerName} is not valid in the ${rowNumber} row / ${columnNumber} column`
+                return `${rowNumber},  ${headerName} is not valid in the ${columnNumber} column`;
             }
         },
         {
@@ -131,13 +143,13 @@ const config = {
             inputName: 'bankId',
             required: true,
             requiredError: function (headerName, rowNumber, columnNumber) {
-                return `${headerName} is required in the ${rowNumber} row / ${columnNumber} column`
+                return `${rowNumber},  ${headerName} is required in the ${columnNumber} column`;
             },
             validate: function (bankId) {
                 return isBankIdValid(bankId)
             },
             validateError: function (headerName, rowNumber, columnNumber) {
-                return `${headerName} is not valid in the ${rowNumber} row / ${columnNumber} column`
+                return `${rowNumber},  ${headerName} is not valid in the ${columnNumber} column`;
             }
         },
         {
@@ -145,7 +157,7 @@ const config = {
             inputName: 'accountClabe',
             required: true,
             requiredError: function (headerName, rowNumber, columnNumber) {
-                return `${headerName} is required in the ${rowNumber} row / ${columnNumber} column`
+                return `${rowNumber},  ${headerName} is required in the ${columnNumber} column`;
             }
         },
     ]
@@ -234,4 +246,18 @@ function isBankIdValid(bank_id) {
     }
 
     return isValid;
+}
+
+function isPhoneNumberValid(phoneNumber) {
+    if (!phoneNumber) {
+        return false;
+    }
+    if (phoneNumber.length > 20) {
+        return false;
+    }
+    var valid = phoneNumberRegex.test(phoneNumber);
+    if (!valid) {
+        return false;
+    }
+    return true;
 }
