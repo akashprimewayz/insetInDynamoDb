@@ -2,6 +2,7 @@
 let AWS = require('aws-sdk');
 let neritoUtils = require('./neritoUtils.js');
 const { v4: uuidv4 } = require('uuid');
+
 const s3 = new AWS.S3();
 
 // Set the region
@@ -9,6 +10,7 @@ const s3 = new AWS.S3();
 //const secretAccessKey = process.env.secretAccessKey
 const region = process.env.region
 const bucket_name = process.env.bucket_name
+const payroll_output_bucket_name = process.env.payroll_output_bucket_name
 const organization_table = process.env.organization_table
 const config_table = process.env.config_table
 
@@ -57,6 +59,32 @@ module.exports = {
             console.error("Failed to get file from S3", err);
             throw new Error(err);
         }
+    },
+    putObjectOnS3: async function (fullFileName, fileContent) {
+
+        let isUploaded = false;
+        // Upload the file to S3
+        var bucketParams = {};
+        bucketParams.Bucket = payroll_output_bucket_name;
+        bucketParams.Key = fullFileName;
+        bucketParams.Body = fileContent;
+        try {
+            let putObjectPromise = await s3.putObject(bucketParams, function (err, data) {
+                if (err) {
+                    console.error("unable to upload file:" + fullFileName + "  ", JSON.stringify(err, null, 2));
+                    return isUploaded;
+                }
+                if (data) {
+                    isUploaded = true;
+                    return isUploaded;
+                }
+            }).promise();
+        } catch (err) {
+            console.log("Something went wrong while uploading object on s3", err);
+            isUploaded = false;
+            return isUploaded;
+        }
+        return isUploaded;
     },
     insertDataIntoDb: async function (data, orgId) {
         console.log("datadatadatadatadata", data)
@@ -213,6 +241,37 @@ module.exports = {
                 ":Year": year,
                 ":Month": month
             }
+        };
+        let result = await documentClient.query(params)
+            .promise()
+            .catch(error => {
+                console.error('Error: ', error);
+                throw new Error(error);
+            });
+        return result;
+    },
+    getEmpFreezeData: async function (orgId, month, year) {
+        const params = {
+            TableName: organization_table,
+            KeyConditionExpression: '#Id = :Id and begins_with(#SK, :SK)',
+            FilterExpression: "#Month = :Month and #Year=:Year and #Status=:Status",
+            ProjectionExpression: "AccountClabe, AccountType, AccountUsers, Address, BankId, Birthdate, City, Email, FirstName, LastName, Gender, Password, PhoneNumber, RFC, #State",
+
+            ExpressionAttributeNames: {
+                "#Id": "Id",
+                "#SK": "SK",
+                "#Year": "Year",
+                "#Month": "Month",
+                "#Status": "Status",
+                "#State": "State",                
+            },
+            ExpressionAttributeValues: {
+                ":Id": orgId,
+                ":SK": "EMP#",
+                ":Year": year,
+                ":Month": month,
+                ":Status": true
+            },
         };
         let result = await documentClient.query(params)
             .promise()
