@@ -20,33 +20,24 @@ const config = {
             validate: function (phoneNumber) {
                 return isPhoneNumberValid(phoneNumber)
             },
+
             validateError: function (headerName, rowNumber, columnNumber) {
                 return `${rowNumber},  ${headerName} is not valid in the ${columnNumber} column`;
             }
         },
         {
-            name: 'password',
-            inputName: 'password',
-            required: true,
-            requiredError: function (headerName, rowNumber, columnNumber) {
-                return `${rowNumber},  ${headerName} is required in the ${columnNumber} column`;
-            }
-        },
-        {
-            name: 'firstName',
-            inputName: 'firstName',
-            required: true,
-            requiredError: function (headerName, rowNumber, columnNumber) {
-                return `${rowNumber},  ${headerName} is required in the ${columnNumber} column`;
-            }
-        },
-        {
-            name: 'lastName',
-            inputName: 'lastName',
+            name: 'name',
+            inputName: 'name',
             required: true,
             requiredError: function (headerName, rowNumber, columnNumber) {
                 return `${rowNumber},  ${headerName} is required in the ${columnNumber} column`;
             },
+            validate: function (phoneNumber) {
+                return isPhoneNumberValid(phoneNumber)
+            },
+            validateError: function (headerName, rowNumber, columnNumber) {
+                return `${rowNumber},  ${headerName} is not valid in the ${columnNumber} column`;
+            }            
         },
         {
             name: 'email',
@@ -67,46 +58,8 @@ const config = {
             }
         },
         {
-            name: 'birthdate',
-            inputName: 'birthdate',
-            required: true,
-            requiredError: function (headerName, rowNumber, columnNumber) {
-                return `${rowNumber},  ${headerName} is required in the ${columnNumber} column`;
-            },
-            validate: function (birthdate) {
-                return neritoUtils.isValidDate(birthdate)
-            },
-            validateError: function (headerName, rowNumber, columnNumber) {
-                return `${rowNumber},  ${headerName} is not valid in the ${columnNumber} column`;
-            }
-        },
-        {
-            name: 'gender',
-            inputName: 'gender',
-            required: true,
-            requiredError: function (headerName, rowNumber, columnNumber) {
-                return `${rowNumber},  ${headerName} is required in the ${columnNumber} column`;
-            }
-        },
-        {
-            name: 'address',
-            inputName: 'address',
-            required: true,
-            requiredError: function (headerName, rowNumber, columnNumber) {
-                return `${rowNumber},  ${headerName} is required in the ${columnNumber} column`;
-            }
-        },
-        {
-            name: 'state',
-            inputName: 'state',
-            required: true,
-            requiredError: function (headerName, rowNumber, columnNumber) {
-                return `${rowNumber},  ${headerName} is required in the ${columnNumber} column`;
-            }
-        },
-        {
-            name: 'city',
-            inputName: 'city',
+            name: 'contact',
+            inputName: 'contact',
             required: true,
             requiredError: function (headerName, rowNumber, columnNumber) {
                 return `${rowNumber},  ${headerName} is required in the ${columnNumber} column`;
@@ -127,7 +80,7 @@ const config = {
         {
             name: 'typeAccount',
             inputName: 'typeAccount',
-            required: true,
+            required: false,
             requiredError: function (headerName, rowNumber, columnNumber) {
                 return `${rowNumber},  ${headerName} is required in the ${columnNumber} column`;
             },
@@ -141,7 +94,7 @@ const config = {
         {
             name: 'bankId',
             inputName: 'bankId',
-            required: true,
+            required: false,
             requiredError: function (headerName, rowNumber, columnNumber) {
                 return `${rowNumber},  ${headerName} is required in the ${columnNumber} column`;
             },
@@ -155,7 +108,7 @@ const config = {
         {
             name: 'accountClabe',
             inputName: 'accountClabe',
-            required: true,
+            required: false,
             requiredError: function (headerName, rowNumber, columnNumber) {
                 return `${rowNumber},  ${headerName} is required in the ${columnNumber} column`;
             }
