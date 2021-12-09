@@ -341,4 +341,25 @@ module.exports = {
             });
         return result.Items[0].Config;
     },
+    getOrgDataById: async function (orgId) {
+        const params = {
+            TableName: organization_table,
+            KeyConditionExpression: '#Id = :Id and begins_with(#SK, :SK)',
+            ExpressionAttributeNames: {
+                "#Id": "Id",
+                "#SK": "SK",
+            },
+            ExpressionAttributeValues: {
+                ":Id": orgId,
+                ":SK": "METADATA#"
+            }
+        };
+        let result = await documentClient.query(params)
+            .promise()
+            .catch(error => {
+                console.error('Error: ', error);
+                throw new Error(error);
+            });
+        return result;
+    }
 };

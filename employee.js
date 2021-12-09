@@ -8,6 +8,8 @@ async function insertEmployee(orgId, fileId) {
         let isAllInserted = true;
         let csvJson;
         let csvFile;
+        let date = new Date();
+
         try {
             let filedetails = await service.getFileDetailsById(orgId, fileId);
             if (filedetails == null) {
@@ -47,7 +49,7 @@ async function insertEmployee(orgId, fileId) {
             return neritoUtils.errorResponseJson("Failed", 400);
         }
         try {
-            const csvValidationData = await csvValidator.validateCsv(csvFile);
+            const csvValidationData = await csvValidator.validateCsv(csvFile,orgId);
             if (csvValidationData == null || csvValidationData == undefined || csvValidationData.data == null || csvValidationData.data == undefined) {
                 console.error("csvValidationData Error : " + fileName);
                 return neritoUtils.errorResponseJson("Failed csvValidationData", 400);
@@ -66,7 +68,6 @@ async function insertEmployee(orgId, fileId) {
             return neritoUtils.errorResponseJson("Failed csvValidationData", 400);
         }
         try {
-            let date = new Date();
             const result = await service.getEmpDataByMonthAndYear(orgId, date.getMonth() + 1, date.getFullYear());
             if (result != null && result != undefined && !isEmpty(result)) {
                 let csvJson = JSON.parse(JSON.stringify(result));
@@ -112,7 +113,7 @@ async function insertEmployee(orgId, fileId) {
         }
 
         try {
-            const result = await service.getDatabyKey(orgId);
+            const result = await service.getEmpDataByMonthAndYear(orgId, date.getMonth() + 1, date.getFullYear());
             return neritoUtils.successResponseJson(result, 200);
         } catch (err) {
             console.error("Failed to fetch data from db : ", err);

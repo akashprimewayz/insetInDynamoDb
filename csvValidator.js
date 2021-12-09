@@ -7,119 +7,149 @@ const phoneNumberRegex = /^\+?([0-9]{2})\)?[-. ]?([0-9]{2})[-. ]?([0-9]{4})[-. ]
 
 let typeAccountConfig;
 let bankIdConfig;
+let config = {};
 
-const config = {
-    headers: [
-        {
-            name: 'phoneNumber',
-            inputName: 'phoneNumber',
-            required: true,
-            requiredError: function (headerName, rowNumber, columnNumber) {
-                return `${rowNumber},  ${headerName} is required in the ${columnNumber} column`;
-            },
-            validate: function (phoneNumber) {
-                return isPhoneNumberValid(phoneNumber)
-            },
+const headers = [
+    {
+        name: 'phoneNumber',
+        inputName: 'phoneNumber',
+        required: false,
+        requiredError: function (headerName, rowNumber, columnNumber) {
+            return `${rowNumber},  ${headerName} is required in the ${columnNumber} column`;
+        },
+        unique: false,
+        uniqueError: function (headerName, rowNumber, columnNumber) {
+            return `${rowNumber},  ${headerName} is not unique in the ${columnNumber} column`;
+        },
+        validate: function (phoneNumber) {
+            return isPhoneNumberValid(phoneNumber);
+        },
+        validateError: function (headerName, rowNumber, columnNumber) {
+            return `${rowNumber},  ${headerName} is not valid in the ${columnNumber} column`;
+        }
+    },
+    {
+        name: 'name',
+        inputName: 'name',
+        required: false,
+        requiredError: function (headerName, rowNumber, columnNumber) {
+            return `${rowNumber},  ${headerName} is required in the ${columnNumber} column`;
+        },
+        unique: false,
+        uniqueError: function (headerName, rowNumber, columnNumber) {
+            return `${rowNumber},  ${headerName} is not unique in the ${columnNumber} column`;
+        },
+    },
+    {
+        name: 'email',
+        inputName: 'email',
+        required: false,
+        requiredError: function (headerName, rowNumber, columnNumber) {
+            return `${rowNumber},  ${headerName} is required in the ${columnNumber} column`;
+        },
+        unique: false,
+        uniqueError: function (headerName, rowNumber, columnNumber) {
+            return `${rowNumber},  ${headerName} is not unique in the ${columnNumber} column`;
+        },
+        validate: function (email) {
+            return isEmailValid(email);
+        },
+        validateError: function (headerName, rowNumber, columnNumber) {
+            return `${rowNumber},  ${headerName} is not valid in the ${columnNumber} column`;
+        }
+    },
+    {
+        name: 'contact',
+        inputName: 'contact',
+        required: false,
+        requiredError: function (headerName, rowNumber, columnNumber) {
+            return `${rowNumber},  ${headerName} is required in the ${columnNumber} column`;
+        },
+        unique: false,
+        uniqueError: function (headerName, rowNumber, columnNumber) {
+            return `${rowNumber},  ${headerName} is not unique in the ${columnNumber} column`;
+        }
+    },
+    {
+        name: 'rfc',
+        inputName: 'rfc',
+        required: false,
+        requiredError: function (headerName, rowNumber, columnNumber) {
+            return `${rowNumber},  ${headerName} is required in the ${columnNumber} column`;
+        },
+        unique: false,
+        uniqueError: function (headerName, rowNumber, columnNumber) {
+            return `${rowNumber},  ${headerName} is not unique in the ${columnNumber} column`;
+        },
+    },
+    {
+        name: 'typeAccount',
+        inputName: 'typeAccount',
+        required: false,
+        requiredError: function (headerName, rowNumber, columnNumber) {
+            return `${rowNumber},  ${headerName} is required in the ${columnNumber} column`;
+        },
+        unique: false,
+        uniqueError: function (headerName, rowNumber, columnNumber) {
+            return `${rowNumber},  ${headerName} is not unique in the ${columnNumber} column`;
+        },
+        validate: function (typeAccount) {
+            return isTypeAccountValid(typeAccount);
+        },
+        validateError: function (headerName, rowNumber, columnNumber) {
+            return `${rowNumber},  ${headerName} is not valid in the ${columnNumber} column`;
+        }
+    },
+    {
+        name: 'bankId',
+        inputName: 'bankId',
+        required: false,
+        requiredError: function (headerName, rowNumber, columnNumber) {
+            return `${rowNumber},  ${headerName} is required in the ${columnNumber} column`;
+        },
+        unique: false,
+        uniqueError: function (headerName, rowNumber, columnNumber) {
+            return `${rowNumber},  ${headerName} is not unique in the ${columnNumber} column`;
+        },
+        validate: function (bankId) {
+            return isBankIdValid(bankId);
+        },
+        validateError: function (headerName, rowNumber, columnNumber) {
+            return `${rowNumber},  ${headerName} is not valid in the ${columnNumber} column`;
+        }
+    },
+    {
+        name: 'accountClabe',
+        inputName: 'accountClabe',
+        required: false,
+        requiredError: function (headerName, rowNumber, columnNumber) {
+            return `${rowNumber},  ${headerName} is required in the ${columnNumber} column`;
+        },
+        unique: false,
+        uniqueError: function (headerName, rowNumber, columnNumber) {
+            return `${rowNumber},  ${headerName} is not unique in the ${columnNumber} column`;
+        },
+    },
+];
 
-            validateError: function (headerName, rowNumber, columnNumber) {
-                return `${rowNumber},  ${headerName} is not valid in the ${columnNumber} column`;
-            }
-        },
-        {
-            name: 'name',
-            inputName: 'name',
-            required: true,
-            requiredError: function (headerName, rowNumber, columnNumber) {
-                return `${rowNumber},  ${headerName} is required in the ${columnNumber} column`;
-            },
-            validate: function (phoneNumber) {
-                return isPhoneNumberValid(phoneNumber)
-            },
-            validateError: function (headerName, rowNumber, columnNumber) {
-                return `${rowNumber},  ${headerName} is not valid in the ${columnNumber} column`;
-            }            
-        },
-        {
-            name: 'email',
-            inputName: 'email',
-            required: true,
-            requiredError: function (headerName, rowNumber, columnNumber) {
-                return `${rowNumber},  ${headerName} is required in the ${columnNumber} column`;
-            },
-            unique: true,
-            uniqueError: function (headerName, rowNumber, columnNumber) {
-                return `${rowNumber},  ${headerName} is not unique in the ${columnNumber} column`;
-            },
-            validate: function (email) {
-                return isEmailValid(email)
-            },
-            validateError: function (headerName, rowNumber, columnNumber) {
-                return `${rowNumber},  ${headerName} is not valid in the ${columnNumber} column`;
-            }
-        },
-        {
-            name: 'contact',
-            inputName: 'contact',
-            required: true,
-            requiredError: function (headerName, rowNumber, columnNumber) {
-                return `${rowNumber},  ${headerName} is required in the ${columnNumber} column`;
-            }
-        },
-        {
-            name: 'rfc',
-            inputName: 'rfc',
-            required: true,
-            requiredError: function (headerName, rowNumber, columnNumber) {
-                return `${rowNumber},  ${headerName} is required in the ${columnNumber} column`;
-            },
-            unique: true,
-            uniqueError: function (headerName, rowNumber, columnNumber) {
-                return `${rowNumber},  ${headerName} is not unique in the ${columnNumber} column`;
-            },
-        },
-        {
-            name: 'typeAccount',
-            inputName: 'typeAccount',
-            required: false,
-            requiredError: function (headerName, rowNumber, columnNumber) {
-                return `${rowNumber},  ${headerName} is required in the ${columnNumber} column`;
-            },
-            validate: function (typeAccount) {
-                return isTypeAccountValid(typeAccount)
-            },
-            validateError: function (headerName, rowNumber, columnNumber) {
-                return `${rowNumber},  ${headerName} is not valid in the ${columnNumber} column`;
-            }
-        },
-        {
-            name: 'bankId',
-            inputName: 'bankId',
-            required: false,
-            requiredError: function (headerName, rowNumber, columnNumber) {
-                return `${rowNumber},  ${headerName} is required in the ${columnNumber} column`;
-            },
-            validate: function (bankId) {
-                return isBankIdValid(bankId)
-            },
-            validateError: function (headerName, rowNumber, columnNumber) {
-                return `${rowNumber},  ${headerName} is not valid in the ${columnNumber} column`;
-            }
-        },
-        {
-            name: 'accountClabe',
-            inputName: 'accountClabe',
-            required: false,
-            requiredError: function (headerName, rowNumber, columnNumber) {
-                return `${rowNumber},  ${headerName} is required in the ${columnNumber} column`;
-            }
-        },
-    ]
-}
 
 module.exports = {
-    validateCsv: async function (data) {
-
+    validateCsv: async function (data,orgId) {
         let csvDataResult;
+       let validationJson = await service.getOrgDataById(orgId);
+        if(validationJson!=null && validationJson!=undefined && validationJson.Items.length>0 && validationJson.Items[0] != null &&validationJson.Items[0]!=undefined && validationJson.Items[0].FileValidation!=null && validationJson.Items[0].FileValidation!=undefined) {
+            validationJson = validationJson.Items[0].FileValidation;
+            validationJson = JSON.parse(JSON.stringify(validationJson));
+    
+            let ConfigMap = headers.map(obj => {
+                obj.required = validationJson[obj.name]['required'],
+                obj.unique = validationJson[obj.name]['unique'];
+                return obj;
+            });
+            config.headers = ConfigMap;        
+        } else {
+            config.headers = headers;        
+        }
 
         typeAccountConfig = await service.getBankConfigByType("account_type");
         bankIdConfig = await service.getBankConfigByType("bank_id");
@@ -140,8 +170,8 @@ module.exports = {
 };
 
 function isEmailValid(email) {
-    if (!email) {
-        return false;
+    if (isEmpty) {
+        return true;
     }
 
     if (email.length > 254) {
@@ -166,7 +196,9 @@ function isEmailValid(email) {
 }
 
 function isTypeAccountValid(type_account) {
-
+    if (isEmpty) {
+        return true;
+    }
     let isValid = false;
     if (!type_account || typeAccountConfig == null || typeAccountConfig == undefined) {
         return isValid;
@@ -184,7 +216,9 @@ function isTypeAccountValid(type_account) {
 }
 
 function isBankIdValid(bank_id) {
-
+    if (isEmpty) {
+        return true;
+    }
     let isValid = false;
     if (!bank_id || bankIdConfig == null || bankIdConfig == undefined) {
         return isValid;
@@ -202,15 +236,17 @@ function isBankIdValid(bank_id) {
 }
 
 function isPhoneNumberValid(phoneNumber) {
-    if (!phoneNumber) {
+    if (isEmpty) {
+        return true;
+    } else if (phoneNumber.length != 16) {
         return false;
-    }
-    if (phoneNumber.length > 20) {
+    } else if (!phoneNumberRegex.test(phoneNumber)) {
         return false;
+    } else {
+        return true;
     }
-    var valid = phoneNumberRegex.test(phoneNumber);
-    if (!valid) {
-        return false;
-    }
-    return true;
+}
+
+function isEmpty(obj) {
+    return Object.keys(obj).length === 0;
 }
