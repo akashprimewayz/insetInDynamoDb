@@ -8,15 +8,17 @@ async function insertEmployee(orgId, fileId) {
         let isAllInserted = true;
         let csvJson;
         let csvFile;
+        let date = new Date();
+
         try {
             let filedetails = await service.getFileDetailsById(orgId, fileId);
-            if (filedetails == null) {
+            if (neritoUtils.isEmpty(filedetails)) {
                 console.error("CSV file details not found by fileId: " + fileId);
                 return neritoUtils.errorResponseJson("NotFound", 400);
             }
             filedetails = JSON.parse(JSON.stringify(filedetails));
             filedetails = filedetails.Items[0];
-            if (filedetails.CsvStatus != null && filedetails.CsvStatus.localeCompare(neritoUtils.csvStatus.PENDING) == 0) {
+            if (filedetails.CsvStatus.localeCompare(neritoUtils.csvStatus.PENDING) == 0) {
                 fileName = filedetails.CsvName;
             } else {
                 console.error("No CSV file found Pending By fileId: " + fileId);
@@ -38,7 +40,7 @@ async function insertEmployee(orgId, fileId) {
         }
         try {
             csvFile = await service.readCsvFromS3(fileName);
-            if (csvFile == null) {
+            if (neritoUtils.isEmpty(csvFile)) {
                 console.error("Empty CSV File Found : " + fileName);
                 return neritoUtils.errorResponseJson("Empty", 400);
             }
@@ -47,16 +49,16 @@ async function insertEmployee(orgId, fileId) {
             return neritoUtils.errorResponseJson("Failed", 400);
         }
         try {
-            const csvValidationData = await csvValidator.validateCsv(csvFile);
-            if (csvValidationData == null || csvValidationData == undefined || csvValidationData.data == null || csvValidationData.data == undefined) {
+            const csvValidationData = await csvValidator.validateCsv(csvFile, orgId);
+            if (neritoUtils.isEmpty(csvValidationData) || neritoUtils.isEmpty(csvValidationData.data)) {
                 console.error("csvValidationData Error : " + fileName);
                 return neritoUtils.errorResponseJson("Failed csvValidationData", 400);
             }
-            if (csvValidationData.inValidMessages != null && csvValidationData.inValidMessages.length > 0) {
+            if (!neritoUtils.isEmpty(csvValidationData.inValidMessages)) {
                 console.error("csvValidationData Error : " + fileName, csvValidationData);
                 return neritoUtils.errorResponseJson(csvValidationData, 400);
             }
-            if (csvValidationData.data != null && csvValidationData.data.length < 10) {
+            if (csvValidationData.data.length < 10) {
                 console.error("Row count is less than 10 : " + fileName);
                 return neritoUtils.errorResponseJson("Row count is less than 10", 400);
             }
@@ -66,12 +68,11 @@ async function insertEmployee(orgId, fileId) {
             return neritoUtils.errorResponseJson("Failed csvValidationData", 400);
         }
         try {
-            let date = new Date();
             const result = await service.getEmpDataByMonthAndYear(orgId, date.getMonth() + 1, date.getFullYear());
-            if (result != null && result != undefined && !isEmpty(result)) {
+            if (!neritoUtils.isEmpty(result)) {
                 let csvJson = JSON.parse(JSON.stringify(result));
                 csvJson = csvJson.Items;
-                if (csvJson != null && csvJson != undefined && !isEmpty(csvJson)) {
+                if (!neritoUtils.isEmpty(csvJson)) {
                     for (var i = 0; i < csvJson.length; i++) {
                         var obj = csvJson[i];
                         const result = await service.deleteRecordByIdAndSk(obj['Id'], obj['SK']);
@@ -85,7 +86,7 @@ async function insertEmployee(orgId, fileId) {
 
         try {
             const result = await service.insertDataIntoDb(csvJson, orgId);
-            if (result != null && result != undefined && !isEmpty(result)) {
+            if (!neritoUtils.isEmpty(result)) {
                 let csvJson = JSON.parse(JSON.stringify(result));
                 for (let i = 0; i < csvJson.length; i++) {
                     var obj = csvJson[i];
@@ -112,7 +113,7 @@ async function insertEmployee(orgId, fileId) {
         }
 
         try {
-            const result = await service.getDatabyKey(orgId);
+            const result = await service.getEmpDataByMonthAndYear(orgId, date.getMonth() + 1, date.getFullYear());
             return neritoUtils.successResponseJson(result, 200);
         } catch (err) {
             console.error("Failed to fetch data from db : ", err);
@@ -123,9 +124,4 @@ async function insertEmployee(orgId, fileId) {
         return neritoUtils.errorResponseJson("Failed Insertion", 400);
     }
 }
-
-function isEmpty(obj) {
-    return Object.keys(obj).length === 0;
-}
-
 module.exports = insertEmployee;

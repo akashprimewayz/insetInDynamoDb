@@ -9,7 +9,7 @@ async function freezeEmployee(orgId) {
         let date = new Date();
         let month = date.getMonth(); // returns 0 - 11
         const result = await service.getEmpFreezeData(orgId, date.getMonth() + 1, date.getFullYear());
-        if (result != null && result != undefined && !isEmpty(result)) {
+        if (!neritoUtils.isEmpty(result)) {
             csvJson = JSON.parse(JSON.stringify(result));
             csvJson = csvJson.Items;
             const csvData = csvjson.toCSV(csvJson, { headers: 'key' });
@@ -35,9 +35,4 @@ async function freezeEmployee(orgId) {
         return neritoUtils.errorResponseJson("Failed Upload", 400);
     }
 }
-
-function isEmpty(obj) {
-    return Object.keys(obj).length === 0;
-}
-
 module.exports = freezeEmployee;
