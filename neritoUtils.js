@@ -6,7 +6,10 @@ module.exports = {
     COMPLETED: 'COMPLETED',
     FAILED: 'FAILED'
   },
-
+  action: {
+    INSERT: 'INSERT',
+    FREEZE: 'FREEZE'
+  },
   successResponseJson: async function (message, code) {
     let response = {};
     let responseBody = {};
@@ -19,7 +22,7 @@ module.exports = {
       "Access-Control-Allow-Origin": '*',
       "Access-Control-Allow-Methods": 'POST,GET,OPTIONS,PUT'
     },
-    response.body = JSON.stringify(responseBody);
+      response.body = JSON.stringify(responseBody);
     console.log(response);
     return response;
   },
@@ -35,7 +38,7 @@ module.exports = {
       "Access-Control-Allow-Origin": '*',
       "Access-Control-Allow-Methods": 'POST,GET,OPTIONS,PUT'
     },
-    response.statusCode = code;
+      response.statusCode = code;
     response.body = JSON.stringify(responseBody);
     console.log(response);
     return response;
@@ -86,5 +89,10 @@ module.exports = {
 
     return [year, month, day].join('-');
   },
-
+  isEmpty: function (obj) {
+    return isEmpty(obj);
+  }
+}
+function isEmpty(obj) {
+  return obj === null || obj === undefined || Object.keys(obj).length === 0;
 }

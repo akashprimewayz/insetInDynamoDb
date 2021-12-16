@@ -3,7 +3,7 @@ let neritoUtils = require('./neritoUtils.js');
 
 let CSVFileValidator = require('csv-file-validator');
 const emailRegex = /^[-!#$%&'*+\/0-9=?A-Z^_a-z{|}~](\.?[-!#$%&'*+\/0-9=?A-Z^_a-z`{|}~])*@[a-zA-Z0-9](-*\.?[a-zA-Z0-9])*\.[a-zA-Z](-?[a-zA-Z0-9])+$/;
-const phoneNumberRegex = /^\+?([0-9]{2})\)?[-. ]?([0-9]{2})[-. ]?([0-9]{4})[-. ]?([0-9]{4})$/;
+const phoneNumberRegex = /^\+?([0-9]{2})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/;
 
 let typeAccountConfig;
 let bankIdConfig;
@@ -134,21 +134,20 @@ const headers = [
 
 
 module.exports = {
-    validateCsv: async function (data,orgId) {
+    validateCsv: async function (data, orgId) {
         let csvDataResult;
-       let validationJson = await service.getOrgDataById(orgId);
-        if(validationJson!=null && validationJson!=undefined && validationJson.Items.length>0 && validationJson.Items[0] != null &&validationJson.Items[0]!=undefined && validationJson.Items[0].FileValidation!=null && validationJson.Items[0].FileValidation!=undefined) {
+        let validationJson = await service.getOrgDataById(orgId);
+        if (!neritoUtils.isEmpty(validationJson) && !neritoUtils.isEmpty(validationJson.Items) && !neritoUtils.isEmpty(validationJson.Items[0]) && !neritoUtils.isEmpty(validationJson.Items[0].FileValidation)) {
             validationJson = validationJson.Items[0].FileValidation;
             validationJson = JSON.parse(JSON.stringify(validationJson));
-    
             let ConfigMap = headers.map(obj => {
                 obj.required = validationJson[obj.name]['required'],
-                obj.unique = validationJson[obj.name]['unique'];
+                    obj.unique = validationJson[obj.name]['unique'];
                 return obj;
             });
-            config.headers = ConfigMap;        
+            config.headers = ConfigMap;
         } else {
-            config.headers = headers;        
+            config.headers = headers;
         }
 
         typeAccountConfig = await service.getBankConfigByType("account_type");
@@ -170,7 +169,7 @@ module.exports = {
 };
 
 function isEmailValid(email) {
-    if (isEmpty) {
+    if (neritoUtils.isEmpty(email)) {
         return true;
     }
 
@@ -196,15 +195,15 @@ function isEmailValid(email) {
 }
 
 function isTypeAccountValid(type_account) {
-    if (isEmpty) {
+    if (neritoUtils.isEmpty(type_account)) {
         return true;
     }
     let isValid = false;
-    if (!type_account || typeAccountConfig == null || typeAccountConfig == undefined) {
+    if (neritoUtils.isEmpty(typeAccountConfig)) {
         return isValid;
     }
     let result = JSON.parse(typeAccountConfig);
-    if (result == null || result == undefined) {
+    if (neritoUtils.isEmpty(result)) {
         return isValid;
     }
     let ids = Object.keys(result);
@@ -216,15 +215,15 @@ function isTypeAccountValid(type_account) {
 }
 
 function isBankIdValid(bank_id) {
-    if (isEmpty) {
+    if (neritoUtils.isEmpty(type_account)) {
         return true;
     }
     let isValid = false;
-    if (!bank_id || bankIdConfig == null || bankIdConfig == undefined) {
+    if (neritoUtils.isEmpty(bankIdConfig)) {
         return isValid;
     }
     let result = JSON.parse(bankIdConfig);
-    if (result == null || result == undefined) {
+    if (neritoUtils.isEmpty(result)) {
         return isValid;
     }
     let ids = Object.keys(result);
@@ -236,7 +235,7 @@ function isBankIdValid(bank_id) {
 }
 
 function isPhoneNumberValid(phoneNumber) {
-    if (isEmpty) {
+    if (neritoUtils.isEmpty(type_account)) {
         return true;
     } else if (phoneNumber.length != 16) {
         return false;
@@ -245,8 +244,4 @@ function isPhoneNumberValid(phoneNumber) {
     } else {
         return true;
     }
-}
-
-function isEmpty(obj) {
-    return Object.keys(obj).length === 0;
 }

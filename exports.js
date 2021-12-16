@@ -9,49 +9,37 @@ exports.handler = async function (event, ctx, callback) {
     let queryJSON = JSON.parse(JSON.stringify(event.queryStringParameters));
     let json = JSON.parse(event.body);
 
-    if (queryJSON == null || queryJSON == undefined || queryJSON['action'] == null || queryJSON['action'] == null) {
+    if (neritoUtils.isEmpty(queryJSON) || neritoUtils.isEmpty(queryJSON['action'])) {
         return neritoUtils.errorResponseJson("Action is not defined", 400);
     }
+
+    if (neritoUtils.isEmpty(json)) {
+        return neritoUtils.errorResponseJson("Body is not Defined", 400);
+    }
+
+    action = queryJSON['action'];
     orgId = json['orgId'];
     fileId = json['fileId'];
-    action = queryJSON['action'];
 
-    if (action != null && action == 'INSERT') {
-        if (json == null) {
-            return neritoUtils.errorResponseJson("Body is not Defined", 400);
-        }
+    if (neritoUtils.isEmpty(json['orgId'])) {
+        return neritoUtils.errorResponseJson("orgId Not Found", 400);
+    }
 
-        if (json != null && json['orgId'] == null) {
-            return neritoUtils.errorResponseJson("orgId Not Found", 400);
-        }
-
-        if (json != null && json['fileId'] == null) {
+    if (action.localeCompare(neritoUtils.action.INSERT) == 0) {
+        if (neritoUtils.isEmpty(fileId)) {
             return neritoUtils.errorResponseJson("fileId Not Found", 400);
         }
-
-
         try {
-            if (orgId != null) {
-                const result = await employee(orgId, fileId);
-                return result;
-            } else {
-                console.error("OrgId Not Found : " + fileId);
-                return neritoUtils.errorResponseJson("OrgId Not Found", 400);
-            }
+            const result = await employee(orgId, fileId);
+            return result;
         } catch (err) {
             console.error("Something went wrong", err);
             return neritoUtils.errorResponseJson(err, 400);
         }
-
-    } else if (action == 'FREEZE') {
+    } else if (action.localeCompare(neritoUtils.action.FREEZE) == 0) {
         try {
-            if (orgId != null) {
-                const result = await freezeController(orgId);
-                return result;
-            } else {
-                console.error("OrgId Not Found ");
-                return neritoUtils.errorResponseJson("OrgId Not Found", 400);
-            }
+            const result = await freezeController(orgId);
+            return result;
         } catch (err) {
             console.error("Something went wrong", err);
             return neritoUtils.errorResponseJson(err, 400);
