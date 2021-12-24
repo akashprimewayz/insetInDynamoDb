@@ -150,8 +150,8 @@ module.exports = {
             config.headers = headers;
         }
 
-        typeAccountConfig = await service.getBankConfigByType("account_type");
-        bankIdConfig = await service.getBankConfigByType("bank_id");
+        typeAccountConfig = await service.getBankConfigByType(neritoUtils.config.ACCOUNT_TYPE);
+        bankIdConfig = await service.getBankConfigByType(neritoUtils.config.BANK_ID);
 
         let csvJson = data.Body.toString('utf-8');
 
@@ -202,7 +202,7 @@ function isTypeAccountValid(type_account) {
     if (neritoUtils.isEmpty(typeAccountConfig)) {
         return isValid;
     }
-    let result = JSON.parse(typeAccountConfig);
+    let result = JSON.parse(JSON.stringify(typeAccountConfig));
     if (neritoUtils.isEmpty(result)) {
         return isValid;
     }
@@ -215,14 +215,15 @@ function isTypeAccountValid(type_account) {
 }
 
 function isBankIdValid(bank_id) {
-    if (neritoUtils.isEmpty(type_account)) {
+    if (neritoUtils.isEmpty(bank_id)) {
         return true;
     }
     let isValid = false;
     if (neritoUtils.isEmpty(bankIdConfig)) {
         return isValid;
     }
-    let result = JSON.parse(bankIdConfig);
+        let result = JSON.parse(JSON.stringify(bankIdConfig));
+
     if (neritoUtils.isEmpty(result)) {
         return isValid;
     }
@@ -235,7 +236,7 @@ function isBankIdValid(bank_id) {
 }
 
 function isPhoneNumberValid(phoneNumber) {
-    if (neritoUtils.isEmpty(type_account)) {
+    if (neritoUtils.isEmpty(phoneNumber)) {
         return true;
     } else if (phoneNumber.length != 16) {
         return false;
