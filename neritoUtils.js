@@ -10,6 +10,14 @@ module.exports = {
     INSERT: 'INSERT',
     FREEZE: 'FREEZE'
   },
+  transferTo: {
+    BNK: 'BNK',
+    WLT: 'WLT'
+},
+config: {
+  ACCOUNT_TYPE: 'ACCOUNT_TYPE',
+  BANK_ID: 'BANK_ID'
+},
   successResponseJson: async function (message, code) {
     let response = {};
     let responseBody = {};

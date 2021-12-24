@@ -60,12 +60,12 @@ module.exports = {
             throw new Error(err);
         }
     },
-    putObjectOnS3: async function (fullFileName, fileContent) {
+    putObjectOnS3: async function (fullFileName, fileContent, freezeFolder) {
 
         let isUploaded = false;
         // Upload the file to S3
         var bucketParams = {};
-        bucketParams.Bucket = payroll_output_bucket_name;
+        bucketParams.Bucket = payroll_output_bucket_name + "/" + freezeFolder;
         bucketParams.Key = fullFileName;
         bucketParams.Body = fileContent;
         try {
@@ -80,14 +80,13 @@ module.exports = {
                 }
             }).promise();
         } catch (err) {
-            console.log("Something went wrong while uploading object on s3", err);
+            console.error("Something went wrong while uploading object on s3", err);
             isUploaded = false;
             return isUploaded;
         }
         return isUploaded;
     },
     insertDataIntoDb: async function (data, orgId) {
-        console.log("datadatadatadatadata", data)
         const batches = [];
         const BATCH_SIZE = 25;
 
@@ -116,7 +115,7 @@ module.exports = {
                                 "Id": orgId,
                                 "SK": "EMP#" + uniqueId,
                                 "CompanyId": orgId,
-                                "OperationType": "AC",                                
+                                "OperationType": "AC",
                                 "PhoneNumber": item['phoneNumber'],
                                 "Name": item['name'],
                                 "Email": item['email'],
@@ -125,7 +124,7 @@ module.exports = {
                                 "AccountType": item['typeAccount'],
                                 "BankId": item['bankId'],
                                 "AccountClabe": item['accountClabe'],
-                                "Currency": "PESOS",                                
+                                "Currency": "PESOS",
                                 "Status": true,
                                 "Month": month,
                                 "Year": date.getFullYear()
@@ -252,7 +251,7 @@ module.exports = {
             TableName: organization_table,
             KeyConditionExpression: '#Id = :Id and begins_with(#SK, :SK)',
             FilterExpression: "#Month = :Month and #Year=:Year and #Status=:Status",
-            ProjectionExpression: "CompanyId, OperationType, PhoneNumber, Name, Email, RFC, AccountType, BankId, AccountClabe, Currency",
+            ProjectionExpression: "CompanyId, OperationType, PhoneNumber, #Name, Email, RFC, AccountType, BankId, AccountClabe, Currency",
 
             ExpressionAttributeNames: {
                 "#Id": "Id",
@@ -260,7 +259,7 @@ module.exports = {
                 "#Year": "Year",
                 "#Month": "Month",
                 "#Status": "Status",
-                "#State": "State",                
+                "#Name": "Name",
             },
             ExpressionAttributeValues: {
                 ":Id": orgId,
@@ -340,6 +339,27 @@ module.exports = {
                 throw new Error(error);
             });
         return result.Items[0].Config;
+    },
+    getOrgDataById: async function (orgId) {
+        const params = {
+            TableName: organization_table,
+            KeyConditionExpression: '#Id = :Id and begins_with(#SK, :SK)',
+            ExpressionAttributeNames: {
+                "#Id": "Id",
+                "#SK": "SK",
+            },
+            ExpressionAttributeValues: {
+                ":Id": orgId,
+                ":SK": "METADATA#"
+            }
+        };
+        let result = await documentClient.query(params)
+            .promise()
+            .catch(error => {
+                console.error('Error: ', error);
+                throw new Error(error);
+            });
+        return result;
     },
     getOrgDataById: async function (orgId) {
         const params = {

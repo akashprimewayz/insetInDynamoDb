@@ -11,15 +11,15 @@ async function insertEmployee(orgId, fileId) {
         let date = new Date();
 
         try {
-            let filedetails = await service.getFileDetailsById(orgId, fileId);
-            if (neritoUtils.isEmpty(filedetails)) {
+            let fileDetails = await service.getFileDetailsById(orgId, fileId);
+            if (neritoUtils.isEmpty(fileDetails)) {
                 console.error("CSV file details not found by fileId: " + fileId);
                 return neritoUtils.errorResponseJson("NotFound", 400);
             }
-            filedetails = JSON.parse(JSON.stringify(filedetails));
-            filedetails = filedetails.Items[0];
-            if (filedetails.CsvStatus.localeCompare(neritoUtils.csvStatus.PENDING) == 0) {
-                fileName = filedetails.CsvName;
+            fileDetails = JSON.parse(JSON.stringify(fileDetails));
+            fileDetails = fileDetails.Items[0];
+            if (fileDetails.CsvStatus.localeCompare(neritoUtils.csvStatus.PENDING) == 0) {
+                fileName = fileDetails.CsvName;
             } else {
                 console.error("No CSV file found Pending By fileId: " + fileId);
                 return neritoUtils.errorResponseJson("No CSV file found Pending By fileId: ", 400);
