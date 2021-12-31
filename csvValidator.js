@@ -18,8 +18,8 @@ const headers = [
             return `${rowNumber},  ${headerName} is required in the ${columnNumber} column`;
         },
         unique: false,
-        uniqueError: function (headerName, rowNumber, columnNumber) {
-            return `${rowNumber},  ${headerName} is not unique in the ${columnNumber} column`;
+        uniqueError: function (headerName, rowNumber) {
+            return `${rowNumber},  ${headerName} is not unique`;
         },
         validate: function (phoneNumber) {
             return isPhoneNumberValid(phoneNumber);
@@ -36,8 +36,8 @@ const headers = [
             return `${rowNumber},  ${headerName} is required in the ${columnNumber} column`;
         },
         unique: false,
-        uniqueError: function (headerName, rowNumber, columnNumber) {
-            return `${rowNumber},  ${headerName} is not unique in the ${columnNumber} column`;
+        uniqueError: function (headerName, rowNumber) {
+            return `${rowNumber},  ${headerName} is not unique`;
         },
     },
     {
@@ -48,8 +48,8 @@ const headers = [
             return `${rowNumber},  ${headerName} is required in the ${columnNumber} column`;
         },
         unique: false,
-        uniqueError: function (headerName, rowNumber, columnNumber) {
-            return `${rowNumber},  ${headerName} is not unique in the ${columnNumber} column`;
+        uniqueError: function (headerName, rowNumber) {
+            return `${rowNumber},  ${headerName} is not unique`;
         },
         validate: function (email) {
             return isEmailValid(email);
@@ -66,9 +66,9 @@ const headers = [
             return `${rowNumber},  ${headerName} is required in the ${columnNumber} column`;
         },
         unique: false,
-        uniqueError: function (headerName, rowNumber, columnNumber) {
-            return `${rowNumber},  ${headerName} is not unique in the ${columnNumber} column`;
-        }
+        uniqueError: function (headerName, rowNumber) {
+            return `${rowNumber},  ${headerName} is not unique`;
+        },
     },
     {
         name: 'rfc',
@@ -78,8 +78,8 @@ const headers = [
             return `${rowNumber},  ${headerName} is required in the ${columnNumber} column`;
         },
         unique: false,
-        uniqueError: function (headerName, rowNumber, columnNumber) {
-            return `${rowNumber},  ${headerName} is not unique in the ${columnNumber} column`;
+        uniqueError: function (headerName, rowNumber) {
+            return `${rowNumber},  ${headerName} is not unique`;
         },
     },
     {
@@ -90,8 +90,8 @@ const headers = [
             return `${rowNumber},  ${headerName} is required in the ${columnNumber} column`;
         },
         unique: false,
-        uniqueError: function (headerName, rowNumber, columnNumber) {
-            return `${rowNumber},  ${headerName} is not unique in the ${columnNumber} column`;
+        uniqueError: function (headerName, rowNumber) {
+            return `${rowNumber},  ${headerName} is not unique`;
         },
         validate: function (typeAccount) {
             return isTypeAccountValid(typeAccount);
@@ -108,8 +108,8 @@ const headers = [
             return `${rowNumber},  ${headerName} is required in the ${columnNumber} column`;
         },
         unique: false,
-        uniqueError: function (headerName, rowNumber, columnNumber) {
-            return `${rowNumber},  ${headerName} is not unique in the ${columnNumber} column`;
+        uniqueError: function (headerName, rowNumber) {
+            return `${rowNumber},  ${headerName} is not unique`;
         },
         validate: function (bankId) {
             return isBankIdValid(bankId);
@@ -126,8 +126,8 @@ const headers = [
             return `${rowNumber},  ${headerName} is required in the ${columnNumber} column`;
         },
         unique: false,
-        uniqueError: function (headerName, rowNumber, columnNumber) {
-            return `${rowNumber},  ${headerName} is not unique in the ${columnNumber} column`;
+        uniqueError: function (headerName, rowNumber) {
+            return `${rowNumber},  ${headerName} is not unique`;
         },
     },
 ];
@@ -141,8 +141,8 @@ module.exports = {
             validationJson = validationJson.Items[0].FileValidation;
             validationJson = JSON.parse(JSON.stringify(validationJson));
             let ConfigMap = headers.map(obj => {
-                obj.required = validationJson[obj.name]['required'],
-                    obj.unique = validationJson[obj.name]['unique'];
+                obj.required = validationJson[obj.name]['required'];
+                obj.unique = validationJson[obj.name]['unique'];
                 return obj;
             });
             config.headers = ConfigMap;
@@ -222,7 +222,7 @@ function isBankIdValid(bank_id) {
     if (neritoUtils.isEmpty(bankIdConfig)) {
         return isValid;
     }
-        let result = JSON.parse(JSON.stringify(bankIdConfig));
+    let result = JSON.parse(JSON.stringify(bankIdConfig));
 
     if (neritoUtils.isEmpty(result)) {
         return isValid;
