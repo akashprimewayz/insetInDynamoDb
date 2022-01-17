@@ -127,7 +127,8 @@ module.exports = {
                                 "Currency": "PESOS",
                                 "Status": true,
                                 "Month": month,
-                                "Year": date.getFullYear()
+                                "Year": date.getFullYear(),
+                                "Type": "EMP"
                             }
                         }
                     });

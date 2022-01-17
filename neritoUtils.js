@@ -13,11 +13,21 @@ module.exports = {
   transferTo: {
     BNK: 'BNK',
     WLT: 'WLT'
-},
-config: {
-  ACCOUNT_TYPE: 'ACCOUNT_TYPE',
-  BANK_ID: 'BANK_ID'
-},
+  },
+  config: {
+    ACCOUNT_TYPE: 'ACCOUNT_TYPE',
+    BANK_ID: 'BANK_ID'
+  },
+  maxLength: {
+    PHONENUMBER: 16,
+    NAME: 60,
+    EMAIL: 39,
+    CONTACT: 20,
+    RFC: 13,
+    TYPEACCOUNT: 3,
+    BANKID: 4,
+    ACCOUNTCLABE: 18
+  },
   successResponseJson: async function (message, code) {
     let response = {};
     let responseBody = {};

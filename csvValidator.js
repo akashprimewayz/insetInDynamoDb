@@ -39,6 +39,12 @@ const headers = [
         uniqueError: function (headerName, rowNumber) {
             return `${rowNumber},  ${headerName} is not unique`;
         },
+        validate: function (name) {
+            return isValidMaxLength("name", name);
+        },
+        validateError: function (headerName, rowNumber, columnNumber) {
+            return `${rowNumber},  ${headerName} is not valid in the ${columnNumber} column`;
+        }
     },
     {
         name: 'email',
@@ -69,6 +75,12 @@ const headers = [
         uniqueError: function (headerName, rowNumber) {
             return `${rowNumber},  ${headerName} is not unique`;
         },
+        validate: function (contact) {
+            return isValidMaxLength("contact", contact);
+        },
+        validateError: function (headerName, rowNumber, columnNumber) {
+            return `${rowNumber},  ${headerName} is not valid in the ${columnNumber} column`;
+        }
     },
     {
         name: 'rfc',
@@ -81,6 +93,12 @@ const headers = [
         uniqueError: function (headerName, rowNumber) {
             return `${rowNumber},  ${headerName} is not unique`;
         },
+        validate: function (rfc) {
+            return isValidMaxLength("rfc", rfc);
+        },
+        validateError: function (headerName, rowNumber, columnNumber) {
+            return `${rowNumber},  ${headerName} is not valid in the ${columnNumber} column`;
+        }
     },
     {
         name: 'typeAccount',
@@ -129,6 +147,12 @@ const headers = [
         uniqueError: function (headerName, rowNumber) {
             return `${rowNumber},  ${headerName} is not unique`;
         },
+        validate: function (accountClabe) {
+            return isValidMaxLength("accountClabe", accountClabe);
+        },
+        validateError: function (headerName, rowNumber, columnNumber) {
+            return `${rowNumber},  ${headerName} is not valid in the ${columnNumber} column`;
+        }
     },
 ];
 
@@ -172,23 +196,11 @@ function isEmailValid(email) {
     if (neritoUtils.isEmpty(email)) {
         return true;
     }
-
-    if (email.length > 254) {
+    if (email.length > neritoUtils.maxLength.EMAIL) {
         return false;
     }
     var valid = emailRegex.test(email);
     if (!valid) {
-        return false;
-    }
-
-    // Further checking of some things regex can't handle
-    var parts = email.split("@");
-    if (parts[0].length > 64) {
-        return false;
-    }
-
-    var domainParts = parts[1].split(".");
-    if (domainParts.some(function (part) { return part.length > 63; })) {
         return false;
     }
     return true;
@@ -199,6 +211,9 @@ function isTypeAccountValid(type_account) {
         return true;
     }
     let isValid = false;
+    if (type_account.length > neritoUtils.maxLength.TYPEACCOUNT) {
+        return isValid;
+    }
     if (neritoUtils.isEmpty(typeAccountConfig)) {
         return isValid;
     }
@@ -219,6 +234,9 @@ function isBankIdValid(bank_id) {
         return true;
     }
     let isValid = false;
+    if (bank_id.length > neritoUtils.maxLength.BANKID) {
+        return isValid;
+    }
     if (neritoUtils.isEmpty(bankIdConfig)) {
         return isValid;
     }
@@ -238,11 +256,20 @@ function isBankIdValid(bank_id) {
 function isPhoneNumberValid(phoneNumber) {
     if (neritoUtils.isEmpty(phoneNumber)) {
         return true;
-    } else if (phoneNumber.length != 16) {
+    } else if (phoneNumber.length != neritoUtils.maxLength.PHONENUMBER) {
         return false;
     } else if (!phoneNumberRegex.test(phoneNumber)) {
         return false;
     } else {
         return true;
     }
+}
+
+function isValidMaxLength(headerName, value) {
+    let isValid = true;
+    headerName = headerName.toUpperCase().trim();
+    if (value.length > neritoUtils.maxLength[headerName]) {
+        isValid = false;
+    }
+    return isValid;
 }
