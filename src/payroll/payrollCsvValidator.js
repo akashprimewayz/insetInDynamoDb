@@ -61,7 +61,7 @@ const config = {
         {
             name: 'reference',
             inputName: 'reference',
-            required: true,
+            required: false,
             requiredError: function (headerName, rowNumber, columnNumber) {
                 return `${rowNumber},  ${headerName} is required in the ${columnNumber} column`;
             },
@@ -70,7 +70,7 @@ const config = {
                 return `${rowNumber},  ${headerName} is not unique`;
             },
             validate: function (reference) {
-                return isDateValid(reference);
+                return isValidMaxLengthNumber("reference", reference);
             },
             validateError: function (headerName, rowNumber, columnNumber) {
                 return `${rowNumber},  ${headerName} is not valid in the ${columnNumber} column`;
@@ -223,10 +223,12 @@ function isValidMaxLength(headerName, value) {
     return true;
 }
 function isValidMaxLengthNumber(headerName, value) {
-    if (neritoUtils.isEmpty(value) || isNaN(value)) {
+    if (neritoUtils.isEmpty(value)) {
+        return true;
+    }
+    if (isNaN(value)) {
         return false;
     }
-    let isValid = true;
     headerName = headerName.toUpperCase().trim();
     if (value.length > constant.maxLength[headerName]) {
         return false;

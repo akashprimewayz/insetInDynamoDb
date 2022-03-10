@@ -60,21 +60,21 @@ module.exports = {
                                 "UserName": item['userName'],
                                 "OriginAccount": organization.OriginAccount,
                                 "Email": item['beneficiaryEmail'],
-                                "DestinationAccount": neritoUtils.zeroAppenderOnLeft(item['destinationAccount']),
+                                "DestinationAccount": neritoUtils.zeroAppenderOnLeft(item['destinationAccount'],constant.maxLength.DESTINATIONACCOUNT),
                                 "RFC": organization.RFC,
-                                "ImportAmount": item['importAmount'],
-                                "ReferenceDate": item['reference'],
+                                "ImportAmount":neritoUtils.fixDecimalPlaces(item['importAmount']),
+                                "ReferenceDate": neritoUtils.zeroAppenderOnLeft(item['reference'],constant.maxLength.REFERENCE),
                                 "Description": item['description'],
                                 "OriginCurrency": 1,
                                 "DestinationCurrency": 1,
-                                "IVA": item['iva'],
-                                "ApplicationDate": item['applicationDate'],
+                                "IVA": "00000000000000",
+                                "ApplicationDate": neritoUtils.formatDate(neritoUtils.dateconverter(item['applicationDate'])),
                                 "PaymentInstructions": item['paymentInstructions'],
                                 "Status": true,
                                 "Month": month,
                                 "Year": date.getFullYear(),
                                 "DateModified": neritoUtils.formatDate(date),
-                                "State": 0
+                                "State": constant.freezeState.PENDING
                             }
                         }
                     });
@@ -96,6 +96,22 @@ module.exports = {
         const params = {
             TableName: payrolls_table,
             IndexName: 'list-payroll-index',
+            KeyConditionExpression: '#SK = :SK',
+            ExpressionAttributeNames: {
+                "#SK": "SK",
+            },
+            ExpressionAttributeValues: {
+                ":SK": Id,
+            }
+        };
+        return await service.getAllData(params);
+    },
+    getPayrollCurrentMonthIdAndSK: async function (orgId) {
+        let Id = (orgId + "#" + monthYear).trim();
+        const params = {
+            TableName: payrolls_table,
+            IndexName: 'list-payroll-index',
+            KeyConditionExpression: '#SK = :SK',
             FilterExpression: "#State = :StateError or #State = :StatePending",
 
             ProjectionExpression: "Id, SK",
@@ -111,23 +127,6 @@ module.exports = {
             }
         };
         return await service.query(params);
-    },
-    getPayrollCurrentMonthIdAndSK: async function (orgId) {
-        let Id = (orgId + "#" + monthYear).trim();
-        const params = {
-            TableName: payrolls_table,
-            IndexName: 'list-payroll-index',
-            KeyConditionExpression: '#SK = :SK',
-            ProjectionExpression: "Id, SK",
-
-            ExpressionAttributeNames: {
-                "#SK": "SK",
-            },
-            ExpressionAttributeValues: {
-                ":SK": Id,
-            }
-        };
-        return await service.getAllData(params);
     },   
     getPayrollFreezeData: async function (orgId) {
         let Id = (orgId + "#" + monthYear).trim();
@@ -137,12 +136,9 @@ module.exports = {
             IndexName: 'list-payroll-index',
             KeyConditionExpression: '#SK = :SK',
             FilterExpression: "#Status=:Status",
-            ProjectionExpression: "Operation, UserName, OriginAccount, DestinationAccount, ImportAmount, #Reference, Description",
-
             ExpressionAttributeNames: {
                 "#SK": "SK",
                 "#Status": "Status",
-                "#Reference": "ReferenceDate",
             },
             ExpressionAttributeValues: {
                 ":SK": Id,
@@ -164,6 +160,24 @@ module.exports = {
         };
         return await service.query(params).Items[0].Config;
     },
+    updatePayroll: async function (Id, SK,freezeState) {
+        let params = {
+            TableName: payrolls_table,
+            Key: {
+                "Id": Id,
+                "SK": SK
+            },
+            UpdateExpression: "set #State = :State",
+            ExpressionAttributeNames: {
+                "#State": "State"
+            },
+            ExpressionAttributeValues: {
+                ":State": freezeState
+            },
+            ReturnValues: "UPDATED_NEW"
+        };
+        return await service.update(params);
+    },
     deletePayrolls: async function (data) {
         return deletePayrolls(data);
     },    
@@ -172,7 +186,7 @@ module.exports = {
  async function deletePayrolls(data) {
     const batches = [];
     const BATCH_SIZE = 25;
-
+    data=data.Items;
     while (data.length > 0) {
         batches.push(data.splice(0, BATCH_SIZE));
     }

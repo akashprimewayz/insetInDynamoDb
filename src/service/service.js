@@ -7,14 +7,14 @@ let neritoUtils = require('../utill/neritoUtils.js');
 //const secretAccessKey = process.env.secretAccessKey
 const region = process.env.region;
 const base_bucket_name = process.env.bucket_name;
+const freeze_temp_bucket = process.env.freeze_temp_bucket;
 const payrollDisbursementFilesBucket = process.env.payrollDisbursementFilesBucket;
 const organization_table = process.env.organization_table;
-const config_table = process.env.config_table;
 
 let AWS = require('aws-sdk');
 const { v4: uuidv4 } = require('uuid');
 const bucketRegion = process.env.bucketRegion;
-const s3 = new AWS.S3({ region: bucketRegion });
+const s3 = new AWS.S3();
 
 AWS.config.update(
     {
@@ -62,11 +62,28 @@ module.exports = {
             throw new Error(err);
         }
     },
-    putObjectOnS3: async function (fullFileName, fileContent, freezeFolder) {
+    readFreezeResponseFilesFromS3: async function (fileName, bucket, region) {
+        const s3 = new AWS.S3({ region: region });
+
+        const params = {
+            Bucket: bucket,
+            Key: fileName
+        };
+        try {
+            const data = await s3.getObject(params).promise();
+            return data;
+        } catch (err) {
+            console.error("Failed to get file from S3", err);
+            throw new Error(err);
+        }
+    },
+    putObjectOnS3: async function (fullFileName, fileContent, bucket, region) {
+        const s3 = new AWS.S3({ region: region });
+
         let isUploaded = false;
         // Upload the file to S3
         var bucketParams = {};
-        bucketParams.Bucket = payrollDisbursementFilesBucket + "/" + freezeFolder;
+        bucketParams.Bucket = bucket;
         bucketParams.Key = fullFileName;
         bucketParams.Body = fileContent;
         try {
@@ -102,6 +119,20 @@ module.exports = {
         };
         return query(params);
     },
+    getOrganizationsList: async function () {
+        const params = {
+            TableName: organization_table,
+            IndexName: 'Type-SK-index',
+            KeyConditionExpression: '#Type = :Type',
+            ExpressionAttributeNames: {
+                "#Type": "Type",
+            },
+            ExpressionAttributeValues: {
+                ":Type": "METADATA"
+            }
+        };
+        return query(params);
+    },
     deleteByIdAndSk: async function (Id, SK) {
         const params = {
             TableName: organization_table,
@@ -131,19 +162,27 @@ module.exports = {
             },
             ReturnValues: "UPDATED_NEW"
         };
-        let dbData;
-        try {
-            dbData = await documentClient.update(params, function (err, data) {
-                if (err) {
-                    console.error("Unable to add item. Error JSON:", JSON.stringify(err, null, 2));
-                    return false;
-                }
-            }).promise();
-        } catch (error) {
-            console.error("Something went wrong while adding data into Db", JSON.stringify(error, null, 2));
-            return false;
-        }
-        return dbData;
+        return update(params);
+    },
+
+    updatePayrollFileDetails: async function (orgId, fileId, payrollFileName) {
+        let params = {
+            TableName: organization_table,
+            Key: {
+                "Id": orgId,
+                "SK": fileId
+            },
+            UpdateExpression: "set PayrollFile = :PayrollFile",
+            ExpressionAttributeValues: {
+                ":PayrollFile": payrollFileName
+            },
+            ReturnValues: "UPDATED_NEW"
+        };
+        return update(params);
+    },
+
+    update: async function (params) {
+        return update(params);
     },
     getOrgDataById: async function (orgId) {
         const params = {
@@ -163,7 +202,7 @@ module.exports = {
     query: async function (params) {
         return query(params);
     },
-    delete: async function (data,table_name) {
+    delete: async function (data, table_name) {
         const batches = [];
         const BATCH_SIZE = 25;
 
@@ -213,8 +252,8 @@ module.exports = {
         });
     },
     getAllData: async function (params) {
-return getAllData(params);
-    },    
+        return getAllData(params);
+    },
 };
 async function query(params) {
     let result = await documentClient.query(params)
@@ -227,7 +266,7 @@ async function query(params) {
 }
 
 
- const getAllData = async (params) => {
+const getAllData = async (params) => {
     const _getAllData = async (params, startKey) => {
         if (startKey) {
             params.ExclusiveStartKey = startKey;
@@ -243,4 +282,20 @@ async function query(params) {
         lastEvaluatedKey = result.LastEvaluatedKey;
     } while (lastEvaluatedKey);
     return rows;
+};
+
+async function update(params) {
+    let dbData;
+    try {
+        dbData = await documentClient.update(params, function (err, data) {
+            if (err) {
+                console.error("Unable to add item. Error JSON:", JSON.stringify(err, null, 2));
+                return false;
+            }
+        }).promise();
+    } catch (error) {
+        console.error("Something went wrong while adding data into Db", JSON.stringify(error, null, 2));
+        return false;
+    }
+    return dbData;
 };

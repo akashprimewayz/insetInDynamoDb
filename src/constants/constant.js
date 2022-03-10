@@ -10,9 +10,16 @@ module.exports = {
     COMPLETED: 'COMPLETED',
     FAILED: 'FAILED'
   },
+
+  freezeState: {
+    PENDING: 0,
+    SUCCESS: 1,
+    Error: 2
+  },
   action: {
     INSERT: 'INSERT',
     FREEZE: 'FREEZE',
+    FREEZE_RESPONSE: 'FREEZE_RESPONSE',
     FREEZE_PAYROLL: 'FREEZE_PAYROLL',
     PAYROLL_INSERT: 'PAYROLL_INSERT'
   },
@@ -30,7 +37,10 @@ module.exports = {
     OPERATION: 'OPERATION'
   },
   maxLength: {
+    COMPANYID: 13,
     PHONENUMBER: 16,
+    OPERATIONTYPE: 2,
+    CURRENCY: 7,
     NAME: 60,
     EMAIL: 39,
     CONTACT: 20,

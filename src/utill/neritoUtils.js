@@ -66,7 +66,6 @@ module.exports = {
     var formatedDate = new Date(dateItems[yearIndex], month, dateItems[dayIndex]);
     return formatedDate;
   },
-
   formatDate: function (date) {
     var d = new Date(date),
       month = '' + (d.getMonth() + 1),
@@ -78,20 +77,79 @@ module.exports = {
     if (day.length < 2)
       day = '0' + day;
 
-    return [year, month, day].join('-');
+    return [day, month, year].join('-');
   },
-  zeroAppenderOnLeft: function (str) {
-    if(isEmpty(str)) {
-      return str;
+  dateFormatter: function (d) {
+    //get the month
+    var month = d.getMonth();
+    //get the day
+    //convert day to string
+    var day = d.getDate().toString();
+    //get the year
+    var year = d.getFullYear();
+
+    //pull the last two digits of the year
+    year = year.toString().substr(-2);
+
+    //increment month by 1 since it is 0 indexed
+    //converts month to a string
+    month = (month + 1).toString();
+
+    //if month is 1-9 pad right with a 0 for two digits
+    if (month.length === 1) {
+      month = "0" + month;
+    }
+
+    //if day is between 1-9 pad right with a 0 for two digits
+    if (day.length === 1) {
+      day = "0" + day;
+    }
+
+    //return the string "MMddyy"
+    return year + month + day;
+  },
+  zeroAppenderOnLeft: function (str, type) {
+    if (isEmpty(str)) {
+      return "".toString().padStart(type, '0');
     }
     let length = str.length;
-    if (length === constant.maxLength.ORIGINACCOUNT) {
+    if (length === type) {
       return str;
     }
-    return str.toString().padStart(constant.maxLength.ORIGINACCOUNT, '0');
+    return str.toString().padStart(type, '0');
+  },
+  spacesAppenderOnRight: function (str, length) {
+    let strLength = str.length;
+    if (strLength === length) {
+      return str;
+    }
+    return str.toString().padEnd(length, '\xa0');
   },
   isEmpty: function (obj) {
     return isEmpty(obj);
+  },
+  isValidJson: function (val) {
+    try {
+      let json = JSON.parse(val);
+      if (!isEmpty(json)) {
+        return true;
+      }
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+  },
+
+  fixDecimalPlaces: function (val) {
+    try {
+      let number = parseFloat(val);
+      number = number.toFixed(2);
+      number = number * 100;
+      return number;
+    } catch (err) {
+      console.error(err);
+      return 0;
+    }
   }
 };
 function isEmpty(obj) {
