@@ -82,7 +82,7 @@ module.exports = {
                                 "Month": month,
                                 "Year": year,
                                 "DateModified": neritoUtils.formatDate(date),
-                                "State": 0
+                                "State": constant.freezeState.PENDING
                             }
                         }
                     });
@@ -140,7 +140,7 @@ module.exports = {
                 ":SK": Id,
             }
         };
-        return await service.query(params);
+        return await service.getAllData(params);
     },
     getEmpCurrentMonthIdAndSK: async function (orgId) {
         let Id = (orgId + "#" + monthYear).trim();
@@ -173,7 +173,7 @@ module.exports = {
             IndexName: 'ListEMP',
             KeyConditionExpression: '#SK = :SK',
             FilterExpression: "#Status=:Status",
-            ProjectionExpression: "CompanyId, OperationType, PhoneNumber, #Name, Email, RFC, AccountType, BankId, AccountClabe, Currency",
+            ProjectionExpression: "CompanyId, OperationType, #Name, RFC, PhoneNumber, Contact, Email,  AccountType, Currency, BankId, AccountClabe, Id, SK",
 
             ExpressionAttributeNames: {
                 "#SK": "SK",
@@ -186,6 +186,24 @@ module.exports = {
             },
         };
         return await service.query(params);
+    },
+    updateEmplyee: async function (Id, SK,freezeState) {
+        let params = {
+            TableName: employee_table,
+            Key: {
+                "Id": Id,
+                "SK": SK
+            },
+            UpdateExpression: "set #State = :State",
+            ExpressionAttributeNames: {
+                "#State": "State"
+            },
+            ExpressionAttributeValues: {
+                ":State": freezeState
+            },
+            ReturnValues: "UPDATED_NEW"
+        };
+        return await service.update(params);
     },
     getConfigByType: async function (Type) {
         const params = {
