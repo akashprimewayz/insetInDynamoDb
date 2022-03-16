@@ -165,12 +165,12 @@ module.exports = {
         return update(params);
     },
 
-    updatePayrollFileDetails: async function (orgId, fileId, payrollFileName) {
+    updatePayrollFileDetails: async function (payrollFileName) {
         let params = {
             TableName: organization_table,
             Key: {
-                "Id": orgId,
-                "SK": fileId
+                "Id": "NERITO#af427acc-b8f7-4455-ab4b-4f61042896f4",
+                "SK": "METADATA#af427acc-b8f7-4455-ab4b-4f61042896f4"
             },
             UpdateExpression: "set PayrollFile = :PayrollFile",
             ExpressionAttributeValues: {

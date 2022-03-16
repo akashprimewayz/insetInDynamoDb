@@ -71,16 +71,9 @@ async function freezeEmployee(orgId, action) {
                 });
             }
         } else if (action.localeCompare(constant.action.FREEZE_PAYROLL) == 0) {
-
             try {
-                let orgList = await service.getOrganizationsList();
-                orgList = orgList.Items;
-                orgList.forEach(element => {
-                    if (element.Id.localeCompare(orgId) == 0) {
-                        orgDetails = element;
-                    }
-                });
-
+                let orgList = await service.getDatabyIdAndSK("NERITO#af427acc-b8f7-4455-ab4b-4f61042896f4","METADATA#af427acc-b8f7-4455-ab4b-4f61042896f4");
+                orgDetails = orgList.Items[0];
             } catch (err) {
                 console.error("CSV file details not found by fileId: ", err);
                 throw "Something went wrong";
@@ -120,7 +113,7 @@ async function freezeEmployee(orgId, action) {
                     json.B_UserName = neritoUtils.spacesAppenderOnRight(element.UserName, constant.maxLength.USERNAME);
                     json.C_OriginAccount = neritoUtils.zeroAppenderOnLeft(element.OriginAccount, constant.maxLength.ORIGINACCOUNT);
                     json.D_DestinationAccount = neritoUtils.zeroAppenderOnLeft(element.DestinationAccount, constant.maxLength.DESTINATIONACCOUNT);
-                    json.E_ImportAmount = neritoUtils.zeroAppenderOnLeft(element.ImportAmount, constant.maxLength.IMPORTAMOUNT);
+                    json.E_ImportAmount = neritoUtils.fixDecimalPlaces(element.ImportAmount, constant.maxLength.IMPORTAMOUNT);
                     json.F_ReferenceDate = neritoUtils.zeroAppenderOnLeft(element.ReferenceDate, constant.maxLength.REFERENCE);
                     json.G_Description = neritoUtils.spacesAppenderOnRight(element.Description, constant.maxLength.DESCRIPTION);
                     json.H_OriginCurrency = element.OriginCurrency;
@@ -145,7 +138,7 @@ async function freezeEmployee(orgId, action) {
             if (action.localeCompare(constant.action.FREEZE_PAYROLL) == 0) {
                 csvData = csvData.replace(/,/g, '');
                 try {
-                    const result = await service.updatePayrollFileDetails(orgId, orgDetails.SK, fullFileName);
+                    const result = await service.updatePayrollFileDetails(fullFileName);
                 } catch (err) {
                     console.error("Failed to update payroll file on server : ", err);
                     throw "Something went wrong";

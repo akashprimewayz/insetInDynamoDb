@@ -62,7 +62,7 @@ module.exports = {
                                 "Email": item['beneficiaryEmail'],
                                 "DestinationAccount": neritoUtils.zeroAppenderOnLeft(item['destinationAccount'],constant.maxLength.DESTINATIONACCOUNT),
                                 "RFC": organization.RFC,
-                                "ImportAmount":neritoUtils.fixDecimalPlaces(item['importAmount']),
+                                "ImportAmount":  neritoUtils.addDecimalPlaces(item['importAmount']),
                                 "ReferenceDate": neritoUtils.zeroAppenderOnLeft(item['reference'],constant.maxLength.REFERENCE),
                                 "Description": item['description'],
                                 "OriginCurrency": 1,

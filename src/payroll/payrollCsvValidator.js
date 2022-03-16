@@ -52,7 +52,7 @@ const config = {
                 return `${rowNumber},  ${headerName} is not unique`;
             },
             validate: function (importAmount) {
-                return isValidMaxLengthNumber("importAmount", importAmount);
+                return isValidImportAmount(importAmount);
             },
             validateError: function (headerName, rowNumber, columnNumber) {
                 return `${rowNumber},  ${headerName} is not valid in the ${columnNumber} column`;
@@ -221,6 +221,7 @@ function isValidMaxLength(headerName, value) {
         return false;
     }
     return true;
+
 }
 function isValidMaxLengthNumber(headerName, value) {
     if (neritoUtils.isEmpty(value)) {
@@ -232,6 +233,26 @@ function isValidMaxLengthNumber(headerName, value) {
     headerName = headerName.toUpperCase().trim();
     if (value.length > constant.maxLength[headerName]) {
         return false;
+    }
+    return true;
+}
+
+
+function isValidImportAmount(value) {
+    if (neritoUtils.isEmpty(value)) {
+        return true;
+    }
+    if (isNaN(value)) {
+        return false;
+    }
+    if (value.split(".").length === 2) {
+        if (value.length > 14) {
+            return false;
+        }
+    } else {
+        if (value.length > 12) {
+            return false;
+        }
     }
     return true;
 }
