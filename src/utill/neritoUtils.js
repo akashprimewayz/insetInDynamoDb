@@ -109,14 +109,7 @@ module.exports = {
     return year + month + day;
   },
   zeroAppenderOnLeft: function (str, type) {
-    if (isEmpty(str)) {
-      return "".toString().padStart(type, '0');
-    }
-    let length = str.length;
-    if (length === type) {
-      return str;
-    }
-    return str.toString().padStart(type, '0');
+    return zeroAppenderOnLeft(str, type);
   },
   spacesAppenderOnRight: function (str, length) {
     let strLength = str.length;
@@ -127,6 +120,9 @@ module.exports = {
   },
   isEmpty: function (obj) {
     return isEmpty(obj);
+  },
+  isEmptyStr: function (obj) {
+    return isEmptyStr(obj);
   },
   isValidJson: function (val) {
     try {
@@ -140,18 +136,49 @@ module.exports = {
     }
   },
 
-  fixDecimalPlaces: function (val) {
+  fixDecimalPlaces: function (val, type) {
     try {
       let number = parseFloat(val);
       number = number.toFixed(2);
       number = number * 100;
+      number = zeroAppenderOnLeft(number, type);
+
       return number;
     } catch (err) {
       console.error(err);
       return 0;
     }
+  },
+  addDecimalPlaces: function (val) {
+    try {
+      if (!isEmptyStr(val)) {
+        let number = parseFloat(val);
+        number = number.toFixed(2);
+        return number;
+      } else {
+        let number = parseFloat("0.00");
+        number = number.toFixed(2);
+        return number;
+      }
+    } catch (err) {
+      console.error(err);
+      return "0.00";
+    }
   }
 };
 function isEmpty(obj) {
   return obj === null || obj === undefined || Object.keys(obj).length === 0;
+}
+function isEmptyStr(obj) {
+  return obj === null || obj === undefined || obj.length === 0;
+}
+function zeroAppenderOnLeft(str, type) {
+  if (isEmptyStr(str)) {
+    return "".toString().padStart(type, '0');
+  }
+  let length = str.length;
+  if (length === type) {
+    return str;
+  }
+  return str.toString().padStart(type, '0');
 }
