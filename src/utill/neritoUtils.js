@@ -7,13 +7,14 @@ module.exports = {
     responseBody.Success = message;
     response.isBase64Encoded = false;
     response.statusCode = code;
-    response.headers = {
-      "X-Requested-With": '*',
-      "Access-Control-Allow-Headers": 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,x-requested-with',
-      "Access-Control-Allow-Origin": '*',
-      "Access-Control-Allow-Methods": 'POST,GET,OPTIONS,PUT'
-    },
-      response.body = JSON.stringify(responseBody);
+    (response.headers = {
+      "X-Requested-With": "*",
+      "Access-Control-Allow-Headers":
+        "Content-Type,X-Amz-Date,Authorization,X-Api-Key,x-requested-with",
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "POST,GET,OPTIONS,PUT",
+    }),
+      (response.body = JSON.stringify(responseBody));
     //console.log(response);
     return response;
   },
@@ -23,13 +24,14 @@ module.exports = {
     let responseBody = {};
     responseBody.Errors = message;
     response.isBase64Encoded = false;
-    response.headers = {
-      "X-Requested-With": '*',
-      "Access-Control-Allow-Headers": 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,x-requested-with',
-      "Access-Control-Allow-Origin": '*',
-      "Access-Control-Allow-Methods": 'POST,GET,OPTIONS,PUT'
-    },
-      response.statusCode = code;
+    (response.headers = {
+      "X-Requested-With": "*",
+      "Access-Control-Allow-Headers":
+        "Content-Type,X-Amz-Date,Authorization,X-Api-Key,x-requested-with",
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "POST,GET,OPTIONS,PUT",
+    }),
+      (response.statusCode = code);
     response.body = JSON.stringify(responseBody);
     //console.log(response);
     return response;
@@ -50,9 +52,11 @@ module.exports = {
     var d = matches[1];
     var y = matches[3];
     var composedDate = new Date(y, m, d);
-    return composedDate.getDate() == d &&
+    return (
+      composedDate.getDate() == d &&
       composedDate.getMonth() == m &&
-      composedDate.getFullYear() == y;
+      composedDate.getFullYear() == y
+    );
   },
   stringToDate: function (_date, _format, _delimiter) {
     var formatLowerCase = _format.toLowerCase();
@@ -63,21 +67,29 @@ module.exports = {
     var yearIndex = formatItems.indexOf("yyyy");
     var month = parseInt(dateItems[monthIndex]);
     month -= 1;
-    var formatedDate = new Date(dateItems[yearIndex], month, dateItems[dayIndex]);
+    var formatedDate = new Date(
+      dateItems[yearIndex],
+      month,
+      dateItems[dayIndex]
+    );
     return formatedDate;
   },
   formatDate: function (date) {
     var d = new Date(date),
-      month = '' + (d.getMonth() + 1),
-      day = '' + d.getDate(),
+      month = "" + (d.getMonth() + 1),
+      day = "" + d.getDate(),
       year = d.getFullYear();
 
-    if (month.length < 2)
-      month = '0' + month;
-    if (day.length < 2)
-      day = '0' + day;
+    if (month.length < 2) month = "0" + month;
+    if (day.length < 2) day = "0" + day;
 
-    return [day, month, year].join('-');
+    return [day, month, year].join("-");
+  },
+  StringDateConverter: function (stringDate) {
+    let day = stringDate.substring(0, 2);
+    let month = stringDate.substring(2, 4);
+    let year = stringDate.substring(4, 8);
+    return [day, month, year].join("-");
   },
   dateFormatter: function (d) {
     //get the month
@@ -116,7 +128,7 @@ module.exports = {
     if (strLength === length) {
       return str;
     }
-    return str.toString().padEnd(length, '\xa0');
+    return str.toString().padEnd(length, "\xa0");
   },
   isEmpty: function (obj) {
     return isEmpty(obj);
@@ -164,7 +176,7 @@ module.exports = {
       console.error(err);
       return "0.00";
     }
-  }
+  },
 };
 function isEmpty(obj) {
   return obj === null || obj === undefined || Object.keys(obj).length === 0;
@@ -174,11 +186,11 @@ function isEmptyStr(obj) {
 }
 function zeroAppenderOnLeft(str, type) {
   if (isEmptyStr(str)) {
-    return "".toString().padStart(type, '0');
+    return "".toString().padStart(type, "0");
   }
   let length = str.length;
   if (length === type) {
     return str;
   }
-  return str.toString().padStart(type, '0');
+  return str.toString().padStart(type, "0");
 }
