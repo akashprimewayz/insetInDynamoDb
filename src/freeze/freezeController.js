@@ -12,7 +12,7 @@ const payrollDisbursementFilesBucketRegion =
   process.env.payrollDisbursementFilesBucketRegion;
 const payrollNeritoBucketRegion = process.env.payrollNeritoBucketRegion;
 
-async function freezeEmployee(orgId, action) {
+async function freezeData(orgId, action) {
   let csvJson,
     options,
     freezeBucket,
@@ -24,19 +24,17 @@ async function freezeEmployee(orgId, action) {
   let jsonArray = [];
   try {
     let date = new Date();
-    let month = date.getMonth(); // returns 0 - 11
 
-    let freezeFolder = constant.transferTo.BNK;
+    // get Organization data
     let organization = await service.getOrgDataById(orgId);
     if (
       !neritoUtils.isEmpty(organization) &&
       !neritoUtils.isEmpty(organization.Items[0])
     ) {
       organization = organization.Items[0];
-      if (organization.TransferTo.localeCompare(constant.transferTo.WLT) == 0) {
-        freezeFolder = constant.transferTo.WLT;
-      }
     }
+
+    // get Nerito config data for updating global counter for file.
     try {
       let orgList = await service.getDatabyIdAndSK(
         "NERITO#af427acc-b8f7-4455-ab4b-4f61042896f4",
@@ -47,7 +45,15 @@ async function freezeEmployee(orgId, action) {
       console.error("CSV file details not found by fileId: ", err);
       throw "Something went wrong";
     }
+
+    // Option for JsonTOcsv we have to remove headers from csv file
+    options = {
+      headers: "none",
+      delimiter: ",",
+    };
+
     if (action.localeCompare(constant.action.FREEZE) == 0) {
+      // For freezing AC records.
       let strDate;
       if (!neritoUtils.isEmpty(orgDetails)) {
         let accountFile = orgDetails.AccountFile;
@@ -57,25 +63,34 @@ async function freezeEmployee(orgId, action) {
           strDate = accountFile.substring(0, 6);
         }
       }
-      options = {
-        headers: "none",
-        delimiter: ",",
-      };
+
+      // Bucket name with sub folder to freeze AC record
       freezeBucket =
         payrollDisbursementFilesBucket +
-        "/" +
+        constant.separator +
         constant.freezeBucket.REGISTER_PAYROLL +
-        "/IN/" +
-        orgId;
-      freezeTempBucket =
-        freeze_temp_bucket +
-        "/" +
-        constant.freezeBucket.REGISTER_PAYROLL +
-        "/IN/" +
+        constant.separator +
+        constant.folder.IN +
+        constant.separator +
         orgId;
 
+      // Temp bucket name with sub for managing same row number
+      freezeTempBucket =
+        freeze_temp_bucket +
+        constant.separator +
+        constant.freezeBucket.REGISTER_PAYROLL +
+        constant.separator +
+        constant.folder.IN +
+        constant.separator +
+        orgId;
+
+      // Get AC data to freeze (only failed and pending records will be send to bank)
       result = await employeeService.getEmpFreezeData(orgId);
+
+      // Intialize file counter with 001
       let count = "001";
+
+      // Change counter if previouse file created on the same
       if (
         !neritoUtils.isEmpty(strDate) &&
         strDate.localeCompare(neritoUtils.dateFormatter(date)) == 0
@@ -84,63 +99,21 @@ async function freezeEmployee(orgId, action) {
         strCount++;
         count = strCount.toString().padStart(3, "0");
       }
+      // File name: length of 21 positions, where RP(2) + NumEmp(6) + AAMMDD(6) + Sequence(3) + .txt(4)
+      // For example Example: RP0391235160322001.txt
+      // Emp number will be hard coded 391235.
       fullFileName =
         constant.freezeBucket.REGISTER_PAYROLL +
-        "391235" +
+        constant.empNumber +
         neritoUtils.dateFormatter(date) +
         count +
-        ".txt";
+        constant.fileFormat.TXT;
+
       if (!neritoUtils.isEmpty(result)) {
         csvJson = JSON.parse(JSON.stringify(result));
         csvJson = csvJson.Items;
-        let json = {};
         if (!neritoUtils.isEmpty(csvJson)) {
-          json.A_CompanyId = neritoUtils.spacesAppenderOnRight(
-            organization.Id,
-            constant.maxLength.COMPANYID
-          );
-          json.B_OperationType = neritoUtils.spacesAppenderOnRight(
-            "AR",
-            constant.maxLength.OPERATIONTYPE
-          );
-          json.C_Name = neritoUtils.spacesAppenderOnRight(
-            organization.OrgName,
-            constant.maxLength.NAME
-          );
-          json.D_RFC = neritoUtils.spacesAppenderOnRight(
-            organization.RFC,
-            constant.maxLength.RFC
-          );
-          json.E_PhoneNumber = neritoUtils.spacesAppenderOnRight(
-            "",
-            constant.maxLength.PHONENUMBER
-          );
-          json.F_Contact = neritoUtils.spacesAppenderOnRight(
-            "",
-            constant.maxLength.CONTACT
-          );
-          json.G_Email = neritoUtils.spacesAppenderOnRight(
-            organization.Email,
-            constant.maxLength.EMAIL
-          );
-          json.H_AccountType = neritoUtils.spacesAppenderOnRight(
-            "000",
-            constant.maxLength.TYPEACCOUNT
-          );
-          json.I_Currency = neritoUtils.spacesAppenderOnRight(
-            "",
-            constant.maxLength.CURRENCY
-          );
-          json.J_BankId = neritoUtils.spacesAppenderOnRight(
-            "",
-            constant.maxLength.BANKID
-          );
-          json.K_AccountClabe = neritoUtils.spacesAppenderOnRight(
-            "X",
-            constant.maxLength.ACCOUNTCLABE
-          );
-          jsonArray.push(json);
-
+          // Arrange all AC records by custom order for csv creation i.e.(CompanyId, OperationType .. etc)
           csvJson.forEach((element) => {
             let json = {};
             json.A_CompanyId = neritoUtils.spacesAppenderOnRight(
@@ -151,41 +124,33 @@ async function freezeEmployee(orgId, action) {
               element.OperationType,
               constant.maxLength.OPERATIONTYPE
             );
-            json.C_Name = neritoUtils.spacesAppenderOnRight(
-              element.Name,
-              constant.maxLength.NAME
-            );
-            json.D_RFC = neritoUtils.spacesAppenderOnRight(
-              element.RFC,
-              constant.maxLength.RFC
-            );
-            json.E_PhoneNumber = neritoUtils.spacesAppenderOnRight(
-              element.PhoneNumber,
-              constant.maxLength.PHONENUMBER
-            );
-            json.F_Contact = neritoUtils.spacesAppenderOnRight(
-              element.Contact,
-              constant.maxLength.CONTACT
-            );
-            json.G_Email = neritoUtils.spacesAppenderOnRight(
-              element.Email,
-              constant.maxLength.EMAIL
-            );
-            json.H_AccountType = neritoUtils.spacesAppenderOnRight(
+            json.C_AccountType = neritoUtils.spacesAppenderOnRight(
               element.AccountType,
               constant.maxLength.TYPEACCOUNT
             );
-            json.I_Currency = neritoUtils.spacesAppenderOnRight(
+            json.D_Currency = neritoUtils.spacesAppenderOnRight(
               element.Currency,
               constant.maxLength.CURRENCY
             );
-            json.J_BankId = neritoUtils.spacesAppenderOnRight(
+            json.E_BankId = neritoUtils.spacesAppenderOnRight(
               element.BankId,
               constant.maxLength.BANKID
             );
-            json.K_AccountClabe = neritoUtils.spacesAppenderOnRight(
+            json.F_Entity = neritoUtils.spacesAppenderOnRight(
+              "01",
+              constant.maxLength.ENTITY
+            );
+            json.G_Plaza = neritoUtils.spacesAppenderOnRight(
+              "001",
+              constant.maxLength.PLAZA
+            );
+            json.H_AccountClabe = neritoUtils.spacesAppenderOnRight(
               element.AccountClabe,
               constant.maxLength.ACCOUNTCLABE
+            );
+            json.I_ExtraInfo = neritoUtils.spacesAppenderOnRight(
+              "",
+              constant.maxLength.EXTRAINFO
             );
             jsonArray.push(json);
           });
@@ -194,6 +159,7 @@ async function freezeEmployee(orgId, action) {
         }
       }
     } else if (action.localeCompare(constant.action.FREEZE_PAYROLL) == 0) {
+      // For freezing PP records.
       let strDate;
       if (!neritoUtils.isEmpty(orgDetails)) {
         let payrollFile = orgDetails.PayrollFile;
@@ -203,22 +169,22 @@ async function freezeEmployee(orgId, action) {
           strDate = payrollFile.substring(0, 6);
         }
       }
-
-      options = {
-        headers: "none",
-        delimiter: ",",
-      };
       freezeBucket =
         payrollDisbursementFilesBucket +
-        "/" +
+        constant.separator +
         constant.freezeBucket.PAYROLL_OUTPUT +
-        "/IN/" +
+        constant.separator +
+        constant.folder.IN +
+        constant.separator +
         orgId;
+
       freezeTempBucket =
         freeze_temp_bucket +
-        "/" +
+        constant.separator +
         constant.freezeBucket.PAYROLL_OUTPUT +
-        "/IN/" +
+        constant.separator +
+        constant.folder.IN +
+        constant.separator +
         orgId;
 
       result = await payrollService.getPayrollFreezeData(orgId);
@@ -231,17 +197,22 @@ async function freezeEmployee(orgId, action) {
         strCount++;
         count = strCount.toString().padStart(3, "0");
       }
+
+      // File name: length of 21 positions, where PP(2) + numComp(6) + YYMMDD(6) + Consecutive(3) + .TxT(4)
+      // For Example: PP035789060303001.TXT
+      // numComp will be hard coded 391235.
       fullFileName =
         constant.freezeBucket.PAYROLL_OUTPUT +
-        "391235" +
+        constant.compNumber +
         neritoUtils.dateFormatter(date) +
         count +
-        ".txt";
+        constant.fileFormat.TXT;
 
       if (!neritoUtils.isEmpty(result)) {
         csvJson = JSON.parse(JSON.stringify(result));
         csvJson = csvJson.Items;
         if (!neritoUtils.isEmpty(csvJson)) {
+          // Arrange all PP records by custom order for csv creation i.e.(Operation, Username .. etc)
           csvJson.forEach((element) => {
             let json = {};
             json.A_Operation = neritoUtils.spacesAppenderOnRight(
@@ -354,4 +325,4 @@ async function freezeEmployee(orgId, action) {
     throw "Something went wrong";
   }
 }
-module.exports = freezeEmployee;
+module.exports = freezeData;
