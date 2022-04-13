@@ -1,4 +1,15 @@
 module.exports = {
+  empNumber: 391235,
+  compNumber: 391235,
+  separator: "/",
+  fileFormat: {
+    TXT: ".txt",
+    RES: ".res",
+  },
+  folder: {
+    IN: "IN",
+    OUT: "OUT",
+  },
   months: [
     "January",
     "February",
@@ -64,12 +75,15 @@ module.exports = {
     RFC: 13,
     TYPEACCOUNT: 3,
     BANKID: 4,
-    ACCOUNTCLABE: 18,
+    ACCOUNTCLABE: 20,
     USERNAME: 13,
     ORIGINACCOUNT: 20,
     DESTINATIONACCOUNT: 20,
     IMPORTAMOUNT: 14,
     REFERENCE: 10,
+    ENTITY: 2,
+    PLAZA: 3,
+    EXTRAINFO: 9,
     DESCRIPTION: 30,
     IVA: 14,
     APPLICATIONDATE: 8,
